@@ -1,0 +1,7 @@
+torch>=2.0.0
+torchvision>=0.15.0
+ray[tune]>=2.9.0
+optuna>=3.5.0
+scipy
+pandas
+tensorboard

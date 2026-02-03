@@ -1,0 +1,24 @@
+# Search Space Configuration
+# Defines the boundaries of the architectural mutation.
+
+input_shape: [3, 32, 32] # Channels, Height, Width
+num_classes: 10
+
+# Macro Architecture Constraints
+min_layers: 2
+max_layers: 8
+
+# Micro Architecture Constraints (Block Level)
+blocks:
+  conv:
+    kernel_size: [3, 5, 7]
+    expansion: [1, 2, 4]
+    activation: ["relu", "silu", "gelu"]
+    se_ratio: [0.0, 0.25] # Squeeze-and-Excitation
+  
+  attention:
+    heads: [2, 4, 8]
+    mlp_ratio: [2, 4]
+    dropout: [0.0, 0.1]
+
+# Reference: MobileNetV3 / ViT Hybrid Design
