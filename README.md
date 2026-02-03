@@ -1,10 +1,25 @@
 # Enterprise AutoML & Neural Architecture Search (NAS) System
+![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
+![Architecture](https://img.shields.io/badge/architecture-distributed-blue)
+![GPU](https://img.shields.io/badge/GPU-spot--optimized-success)
+![Cost](https://img.shields.io/badge/focus-cost--aware-orange)
+![PyTorch](https://img.shields.io/badge/framework-PyTorch-red)
+![Ray](https://img.shields.io/badge/orchestration-Ray_Tune-purple)
+![Optuna](https://img.shields.io/badge/search-Optuna_TPE-blueviolet)
+![CUDA](https://img.shields.io/badge/compute-CUDA-green)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 > **Production-Grade, Distributed, and Cost-Aware Architecture Search Platform**
 
+---
+
+## Architecture Overview
+
+![System Architecture](architecture/system_design.png)
+
 > **Architecture Artifacts**:  
-> [Open Diagram (draw.io)](architecture/system_design.drawio) ·  
-> [Diagram Specification](architecture/diagram_spec.md)
+> [Open Diagram Source (draw.io)](architecture/system_design.drawio) ·  
+> [View Diagram Specification](architecture/diagram_spec.md)
 
 ---
 
@@ -197,3 +212,4 @@ pip install -r requirements.txt
 ```
 
 ---
+
