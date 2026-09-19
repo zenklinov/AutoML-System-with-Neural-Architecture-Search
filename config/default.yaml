@@ -1,0 +1,49 @@
+environment:
+  python: "3.11.9"
+  torch: "2.4.0"
+  torchvision: "0.19.0"
+  ray: "2.40.0"
+  optuna: "4.0.0"
+
+seed: 2026
+
+data:
+  directory: "./data"
+  validation_fraction: 0.10
+  num_workers: 0
+  max_train_samples: null
+  max_validation_samples: null
+
+model:
+  input_channels: 3
+  num_classes: 10
+  search_space:
+    num_blocks:
+      min: 2
+      max: 4
+    kernel_sizes: [3, 5]
+    output_channels: [16, 32, 64]
+    activations: ["relu", "silu"]
+    residual: [true, false]
+
+training:
+  batch_size: 64
+  learning_rate: 0.001
+  max_epochs: 10
+
+search:
+  strategy: "bayesian"
+  num_trials: 10
+  metric: "validation_accuracy"
+  mode: "max"
+  grace_period_epochs: 2
+  reduction_factor: 2
+  max_concurrent_trials: 2
+
+resources:
+  cpu_per_trial: 1
+  gpu_per_trial: 0
+
+output:
+  storage_path: "./ray_results"
+  experiment_name: "nas_experiment"

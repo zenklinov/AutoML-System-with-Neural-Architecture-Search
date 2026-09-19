@@ -1,7 +1,5 @@
-torch>=2.0.0
-torchvision>=0.15.0
-ray[tune]>=2.9.0
-optuna>=3.5.0
-scipy
-pandas
-tensorboard
+torch==2.4.0
+torchvision==0.19.0
+ray[tune]==2.40.0
+optuna==4.0.0
+PyYAML==6.0.2
