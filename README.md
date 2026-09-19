@@ -1,215 +1,126 @@
-# Enterprise AutoML & Neural Architecture Search (NAS) System
-![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
-![Architecture](https://img.shields.io/badge/architecture-distributed-blue)
-![GPU](https://img.shields.io/badge/GPU-spot--optimized-success)
-![Cost](https://img.shields.io/badge/focus-cost--aware-orange)
-![PyTorch](https://img.shields.io/badge/framework-PyTorch-red)
-![Ray](https://img.shields.io/badge/orchestration-Ray_Tune-purple)
-![Optuna](https://img.shields.io/badge/search-Optuna_TPE-blueviolet)
-![CUDA](https://img.shields.io/badge/compute-CUDA-green)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
-
-> **Production-Grade, Distributed, and Cost-Aware Architecture Search Platform**
-
----
-
-## Architecture Overview
-
-![System Architecture](architecture/system_design.png)
-
-> **Architecture Artifacts**:  
-> [Open Diagram Source (draw.io)](architecture/system_design.drawio) ·  
-> [View Diagram Specification](architecture/diagram_spec.md)
-
----
-
-## Purpose
-
-Most AutoML and NAS repositories focus on algorithmic novelty.  
-This repository focuses on **system design and operational reality**.
-
-Designing a NAS algorithm is straightforward. Designing a NAS **system** that operates reliably under cost constraints, infrastructure volatility, and distributed execution is not.
-
-This project demonstrates how to:
-
-- **Orchestrate Distributed Search**: Scale from a single GPU to large clusters using Ray Tune without modifying search logic.
-- **Control Compute Spend**: Reduce GPU cost by ~70% through Spot Instances, early termination, and parallel scheduling.
-- **Operate Under Failure**: Recover from preemption, OOMs, and partial node loss without corrupting search state.
-- **Separate Concerns Cleanly**: Isolate orchestration (CPU), training (GPU), and state (storage).
-
-This repository is a **reference architecture**, not an academic experiment.
-
----
-
-## Scope & Non-Goals
-
-To avoid misinterpretation, the following are explicitly out of scope:
-
-- **Managed SaaS Platform**: This is not a multi-tenant, hosted AutoML service.
-- **Feature Engineering Automation**: The focus is neural architecture search, not data preprocessing.
-- **Single-Node Optimization**: While local execution is supported, the architecture is justified only at distributed scale.
-
----
-
-## System Architecture
-
-The system follows a **split-plane design**, separating low-cost control logic from high-cost compute execution.
-
-### Control Plane (Stable, Low Cost)
-
-- **Ray Head Node**  
-  Runs on a CPU-only instance (e.g., `t3.medium`) and maintains global search state.
-
-- **Search Engine (Bayesian Optimization)**  
-  Implemented using Optuna (TPE) to sample promising architectures efficiently.
-
-- **Scheduler (ASHA / HyperBand)**  
-  Continuously evaluates trial performance and aggressively terminates underperforming candidates to preserve budget.
-
-### Compute Plane (Ephemeral, Cost-Optimized)
-
-- **GPU Workers**  
-  Stateless training workers designed explicitly for Spot / Preemptible instances.
-
-- **Failure Recovery**  
-  When a worker is preempted, the orchestrator reschedules the trial and restores weights from the latest checkpoint.
-
-### Execution Flow
-
-1. A user submits a NAS job via CLI or API.
-2. The orchestrator initializes candidate architectures.
-3. The scheduler dispatches trials to available GPU workers.
-4. Workers train for short intervals, report metrics, and receive continuation or termination signals.
-5. Only the top-performing architectures are persisted to the model registry.
-
----
-
-## Observability & Monitoring
-
-Operational visibility is treated as a first-class concern:
-
-- **Per-Trial Telemetry**  
-  Ray Tune captures metrics (loss, accuracy), logs, and failure signals for each trial.
-
-- **Centralized Experiment Tracking**  
-  Integration with MLflow and TensorBoard enables comparison between completed and pruned architectures.
-
-- **Cost Attribution**  
-  Each trial is tagged with runtime duration and node type, enabling precise GPU-hour accounting.  
-  Example output is provided in `results/sample_metrics.csv`.
-
----
-
-## Neural Architecture Search Design
-
-This system performs **true architecture search**, not parameter tuning.
-
-### Search Space
-
-- **Convolutional Blocks**
-  - Kernel sizes: `{3×3, 5×5, 7×7}`
-  - Expansion ratios: `{1, 2, 4}`
-
-- **Attention Blocks**
-  - Heads: `{2, 4, 8}`
-  - MLP ratios: `{2, 4}`
-
-- **Depth Control**
-  - Dynamic depth between 8 and 32 layers using stochastic depth sampling.
-
-### Search Strategy
-
-- **Bayesian Optimization (TPE)**  
-  Prioritizes promising regions of the search space and converges significantly faster than random search.
-
-- **ASHA Early Stopping**  
-  Implements a strict “fail fast” policy, terminating poorly performing architectures after minimal compute investment.
-
----
-
-## Cost Analysis
-
-A naïve NAS implementation on ImageNet-scale workloads can cost hundreds of dollars.  
-This architecture is designed to reduce that cost by an order of magnitude.
-
-### Baseline Configuration
-
-- Instance: AWS `g4dn.xlarge` (On-Demand)
-- Trials: 50
-- Epochs per trial: 20
-- Cost per hour: $0.526  
-- **Estimated total**: ~$52.60
-
-### Optimized Configuration (This System)
-
-- Instance: AWS Spot `g4dn.xlarge`
-- Average Spot price: ~$0.158/hour
-- Early termination rate: ~70%
-- Parallel execution eliminates idle time  
-- **Estimated total**: **< $5.00**
-
-**Business impact**: Comparable model quality achieved at <10% of the cost of a full grid search.
-
----
-
-## Failure & Recovery Model
-
-Failure is assumed and explicitly designed for.
-
-| Failure Scenario | Mitigation |
-|------------------|------------|
-| GPU OOM | Trial is marked as pruned and excluded from future sampling. |
-| Spot preemption | Trial is rescheduled automatically and resumed from checkpoint. |
-| Orchestrator restart | Search state is persisted and resumes without manual intervention. |
-
----
-
-## Security Considerations
-
-- **Network Isolation**  
-  The Ray cluster is intended to run inside a private VPC with no public ingress.
-
-- **Secrets Management**  
-  Cloud credentials are provided via IAM roles or environment variables, never embedded in code.
-
-- **Serialization Trust Model**  
-  PyTorch/Ray serialization assumes trusted internal execution; untrusted artifact ingestion is out of scope.
-
----
-
-## Repository Structure
-
-```bash
-AutoML-System-with-Neural-Architecture-Search/
-├── architecture/
-│   ├── system_design.drawio
-│   └── diagram_spec.md
-├── src/
-│   ├── orchestrator/
-│   ├── nas/
-│   ├── training/
-│   └── evaluation/
-├── config/
-│   ├── search_space.yaml
-│   └── runtime.yaml
-└── scripts/
+# Multi-Trial Neural Architecture Search Prototype
+
+This repository is a small, local neural architecture search prototype for
+CIFAR-10. It uses PyTorch to instantiate discrete CNN candidates and Ray Tune
+to orchestrate parallel trials. Optuna TPE or seeded random sampling proposes
+architectures, while ASHA can stop weak trials early.
+
+The project is an experimentation prototype. It is not a production platform,
+a demonstrated multi-node distributed system, a cloud cost optimizer, or a
+weight-sharing/one-shot NAS implementation.
+
+## Implemented workflow
+
+```text
+CIFAR-10 training data
+  -> deterministic train/validation split
+  -> conditional 2-4 block CNN search space
+  -> PyTorch candidate training
+  -> validation metrics reported to Ray Tune
+  -> ASHA early stopping
+  -> best candidate selected by validation accuracy
 ```
 
-## Getting Started
+The official CIFAR-10 test set is not used during architecture search. It is
+reserved for a later final-evaluation phase.
 
-### Prerequisites
-*   Python 3.9+
-*   CUDA 11.x (or CPU mode for testing)
-*   Ray Cluster (Local or K8s)
+## Search space
 
-### Execution
+[`config/default.yaml`](config/default.yaml) is the executable source of truth.
+For each active block, the search selects:
+
+- kernel size: 3 or 5;
+- output channels: 16, 32, or 64;
+- activation: ReLU or SiLU;
+- residual connection: enabled or disabled.
+
+Only parameters for active blocks are sampled. Training hyperparameters are
+fixed in this phase so architecture comparisons are not mixed with a separate
+hyperparameter search.
+
+## Supported environment
+
+Phase 1 targets the following explicit environment:
+
+- Python 3.11.9
+- PyTorch 2.4.0
+- torchvision 0.19.0
+- Ray Tune 2.40.0
+- Optuna 4.0.0
+- PyYAML 6.0.2
+
+Install dependencies in a Python 3.11 virtual environment:
+
 ```bash
-# 1. Install Dependencies
-pip install -r requirements.txt
-
-# 2. Run Search (Local Mode)
-./scripts/run_search.sh bayesian 20
+python -m venv .venv
+source .venv/bin/activate  # Windows PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
----
+## Run a CPU search
 
+```bash
+python -m src.orchestrator.main --config config/default.yaml --cpu
+```
+
+The launcher forwards the same CLI options:
+
+```bash
+./scripts/run_search.sh --cpu
+```
+
+For a cheap end-to-end smoke run:
+
+```bash
+python -m src.orchestrator.main \
+  --config config/default.yaml \
+  --strategy random \
+  --trials 2 \
+  --parallelism 1 \
+  --max-epochs 1 \
+  --max-train-samples 128 \
+  --max-validation-samples 64 \
+  --cpu
+```
+
+The first run downloads CIFAR-10 to `data/`. Ray output is written under
+`ray_results/`. Both locations are ignored by Git.
+
+## GPU mode
+
+GPU mode is optional:
+
+```bash
+python -m src.orchestrator.main --config config/default.yaml --gpu
+```
+
+GPU trials explicitly request one GPU through Ray. On a one-GPU machine, Ray
+therefore schedules at most one GPU trial at a time and does not silently
+oversubscribe the device.
+
+## Checkpoints
+
+Each reported epoch registers a Ray checkpoint containing model state,
+optimizer state, completed epoch, trial configuration, Python/PyTorch RNG
+state, and DataLoader generator state. This supports meaningful trial resume
+for the selected Ray version. Full cross-environment deterministic recovery is
+not claimed.
+
+## Current limitations
+
+- No final benchmark or performance claim is included yet.
+- No official test-set evaluation is performed during search.
+- Only local Ray execution has been validated.
+- The current search is multi-trial NAS, not a weight-sharing SuperNet.
+- Dependency locking, a full test suite, CI, and the final experiment protocol
+  belong to later phases.
+- ASHA is described only as resource-efficient trial pruning; no monetary cost
+  reduction is claimed or measured.
+
+The old sample metrics file was removed because it was illustrative and could
+not be reproduced from the executable search path.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
