@@ -1,4 +1,4 @@
-"""Configurable CNN candidates used by the multi-trial NAS experiment."""
+"""PyTorch model components for discrete NAS candidates."""
 
 from __future__ import annotations
 
@@ -22,17 +22,18 @@ class ConfigurableConvBlock(nn.Module):
     ) -> None:
         super().__init__()
         if kernel_size not in {3, 5}:
-            raise ValueError(f"Unsupported kernel size: {kernel_size}")
+            raise ValueError(f"unsupported kernel size: {kernel_size}")
         if activation_name not in {"relu", "silu"}:
-            raise ValueError(f"Unsupported activation: {activation_name}")
+            raise ValueError(f"unsupported activation: {activation_name}")
+        if in_channels <= 0 or out_channels <= 0:
+            raise ValueError("channel counts must be positive")
 
         self.use_residual = use_residual
-        padding = kernel_size // 2
         self.conv = nn.Conv2d(
             in_channels,
             out_channels,
             kernel_size,
-            padding=padding,
+            padding=kernel_size // 2,
             bias=False,
         )
         self.bn = nn.BatchNorm2d(out_channels)
@@ -65,7 +66,7 @@ class CandidateCNN(nn.Module):
         super().__init__()
         blocks = architecture.get("blocks")
         num_blocks = architecture.get("num_blocks")
-        if not isinstance(blocks, Sequence) or isinstance(blocks, (str, bytes)):
+        if not isinstance(blocks, Sequence) or isinstance(blocks, str | bytes):
             raise ValueError("architecture.blocks must be a sequence")
         if num_blocks not in {2, 3, 4} or len(blocks) != num_blocks:
             raise ValueError("architecture must define exactly 2, 3, or 4 active blocks")
@@ -75,28 +76,27 @@ class CandidateCNN(nn.Module):
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
         )
-
         layers: list[nn.Module] = []
-        in_channels = 32
-        for block_config in blocks:
-            out_channels = int(block_config["out_channels"])
+        current_channels = 32
+        for block in blocks:
+            output_channels = int(block["out_channels"])
             layers.extend(
                 [
                     ConfigurableConvBlock(
-                        in_channels=in_channels,
-                        out_channels=out_channels,
-                        kernel_size=int(block_config["kernel_size"]),
-                        activation_name=str(block_config["activation"]),
-                        use_residual=bool(block_config["residual"]),
+                        in_channels=current_channels,
+                        out_channels=output_channels,
+                        kernel_size=int(block["kernel_size"]),
+                        activation_name=str(block["activation"]),
+                        use_residual=bool(block["residual"]),
                     ),
                     nn.MaxPool2d(kernel_size=2),
                 ]
             )
-            in_channels = out_channels
+            current_channels = output_channels
 
         self.features = nn.Sequential(*layers)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.classifier = nn.Linear(in_channels, num_classes)
+        self.classifier = nn.Linear(current_channels, num_classes)
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         outputs = self.stem(inputs)

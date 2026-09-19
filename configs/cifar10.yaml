@@ -1,18 +1,14 @@
-environment:
-  python: "3.11.9"
-  torch: "2.4.0"
-  torchvision: "0.19.0"
-  ray: "2.40.0"
-  optuna: "4.0.0"
-
 seed: 2026
 
 data:
-  directory: "./data"
+  dataset: cifar10
+  directory: ../data
   validation_fraction: 0.10
+  split_seed: 2026
   num_workers: 0
   max_train_samples: null
   max_validation_samples: null
+  synthetic_samples: null
 
 model:
   input_channels: 3
@@ -30,12 +26,15 @@ training:
   batch_size: 64
   learning_rate: 0.001
   max_epochs: 10
+  deterministic_algorithms: true
 
 search:
-  strategy: "bayesian"
+  strategy: bayesian
+  seed: 2026
+  # Provisional local budget only; Phase 3 will define the experiment protocol.
   num_trials: 10
-  metric: "validation_accuracy"
-  mode: "max"
+  metric: validation_accuracy
+  mode: max
   grace_period_epochs: 2
   reduction_factor: 2
   max_concurrent_trials: 2
@@ -45,5 +44,5 @@ resources:
   gpu_per_trial: 0
 
 output:
-  storage_path: "./ray_results"
-  experiment_name: "nas_experiment"
+  root_directory: ../artifacts
+  run_label: cifar10-search

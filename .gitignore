@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.pytest-*/
 .mypy_cache/
 .ruff_cache/
 
@@ -14,6 +15,7 @@ env/
 # Data and experiment output
 data/
 ray_results/
+artifacts/
 results/**
 !results/README.md
 *.pt
