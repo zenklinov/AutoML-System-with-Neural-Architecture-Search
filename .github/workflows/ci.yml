@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.9"
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install locked CPU environment
+        run: python -m pip install -r requirements.lock
+      - name: Install project
+        run: python -m pip install -e . --no-deps --no-build-isolation
+      - name: Lint
+        run: ruff check .
+      - name: Unit and integration tests
+        run: pytest -m "not smoke"
+      - name: CPU smoke test
+        run: pytest -m smoke

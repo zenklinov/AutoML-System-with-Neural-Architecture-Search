@@ -1,8 +1,8 @@
-# Results
+# Curated Results
 
-This directory intentionally contains no claimed experiment result yet.
+This directory intentionally contains no benchmark result yet.
 
-Ray Tune output is written to `ray_results/` and ignored by Git. The previous
-`sample_metrics.csv` was an illustrative artifact whose schema did not match
-the executable search and has been removed. Curated results will be added only
-after a later experiment protocol is frozen and executed.
+Generated run artifacts belong under `artifacts/runs/<run-id>/` and remain
+ignored by Git. After a later experiment protocol is approved, small summaries,
+tables, and figures may be curated here only when they can be regenerated from
+canonical run manifests and trial summaries.

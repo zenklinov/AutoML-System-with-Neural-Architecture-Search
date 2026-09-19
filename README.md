@@ -1,126 +1,142 @@
 # Multi-Trial Neural Architecture Search Prototype
 
-This repository is a small, local neural architecture search prototype for
-CIFAR-10. It uses PyTorch to instantiate discrete CNN candidates and Ray Tune
-to orchestrate parallel trials. Optuna TPE or seeded random sampling proposes
-architectures, while ASHA can stop weak trials early.
+This is a small, reproducible neural architecture search prototype for
+CIFAR-10. It instantiates discrete PyTorch CNN candidates and uses Ray Tune,
+Optuna, and ASHA for local parallel trial orchestration and early stopping.
 
-The project is an experimentation prototype. It is not a production platform,
-a demonstrated multi-node distributed system, a cloud cost optimizer, or a
-weight-sharing/one-shot NAS implementation.
-
-## Implemented workflow
-
-```text
-CIFAR-10 training data
-  -> deterministic train/validation split
-  -> conditional 2-4 block CNN search space
-  -> PyTorch candidate training
-  -> validation metrics reported to Ray Tune
-  -> ASHA early stopping
-  -> best candidate selected by validation accuracy
-```
-
-The official CIFAR-10 test set is not used during architecture search. It is
-reserved for a later final-evaluation phase.
-
-## Search space
-
-[`config/default.yaml`](config/default.yaml) is the executable source of truth.
-For each active block, the search selects:
-
-- kernel size: 3 or 5;
-- output channels: 16, 32, or 64;
-- activation: ReLU or SiLU;
-- residual connection: enabled or disabled.
-
-Only parameters for active blocks are sampled. Training hyperparameters are
-fixed in this phase so architecture comparisons are not mixed with a separate
-hyperparameter search.
+The project is not a production platform, a demonstrated multi-node system, or
+a weight-sharing NAS implementation. No benchmark or model-quality claim is
+included yet.
 
 ## Supported environment
-
-Phase 1 targets the following explicit environment:
 
 - Python 3.11.9
 - PyTorch 2.4.0
 - torchvision 0.19.0
 - Ray Tune 2.40.0
 - Optuna 4.0.0
-- PyYAML 6.0.2
 
-Install dependencies in a Python 3.11 virtual environment:
+`pyproject.toml` is the source of truth for direct runtime and development
+dependencies. `requirements.lock` records the fully resolved reference CPU
+environment used for local validation. It is a practical environment lock, not
+a claim of bit-for-bit equivalence across operating systems or CUDA hardware.
+
+## Clean installation
+
+CPU installation:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows PowerShell: .venv\Scripts\Activate.ps1
+source .venv/bin/activate  # Windows: .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install torch==2.4.0 torchvision==0.19.0 \
+  --index-url https://download.pytorch.org/whl/cpu
+python -m pip install -e ".[dev]"
 ```
 
-## Run a CPU search
+To reproduce the locally resolved dependency set, install
+`requirements.lock`, then install the package without dependency resolution:
 
 ```bash
-python -m src.orchestrator.main --config config/default.yaml --cpu
+python -m pip install -r requirements.lock
+python -m pip install -e . --no-deps --no-build-isolation
 ```
 
-The launcher forwards the same CLI options:
+GPU users must install the PyTorch 2.4.0 wheel matching their supported CUDA
+runtime before installing this project. GPU determinism is not guaranteed
+across different drivers, devices, or CUDA libraries.
+
+## Package structure
+
+```text
+src/automl_nas/
+├── config.py       validated YAML contract
+├── data.py         deterministic train/validation data isolation
+├── models.py       configurable block and discrete CNN candidate
+├── training.py     training, evaluation, checkpoint, and RNG state
+├── search.py       Optuna/ASHA/Ray orchestration
+├── artifacts.py    provenance manifest and canonical result schema
+└── cli.py          installed command-line interface
+```
+
+## Configuration
+
+- `configs/smoke.yaml`: two-trial CPU pipeline check using deterministic
+  synthetic data. Its accuracy is not experimental evidence.
+- `configs/cifar10.yaml`: intended CIFAR-10 search structure with a provisional
+  local budget. Phase 3 will define the actual experiment protocol.
+
+Configurations reject unknown fields and unsupported architecture choices.
+The YAML file is authoritative; the CLI selects a config but does not silently
+override its values.
+
+Validate a config:
 
 ```bash
-./scripts/run_search.sh --cpu
+automl-nas validate-config --config configs/smoke.yaml
 ```
 
-For a cheap end-to-end smoke run:
+## Run
+
+CPU smoke search:
 
 ```bash
-python -m src.orchestrator.main \
-  --config config/default.yaml \
-  --strategy random \
-  --trials 2 \
-  --parallelism 1 \
-  --max-epochs 1 \
-  --max-train-samples 128 \
-  --max-validation-samples 64 \
-  --cpu
+automl-nas search --config configs/smoke.yaml
 ```
 
-The first run downloads CIFAR-10 to `data/`. Ray output is written under
-`ray_results/`. Both locations are ignored by Git.
-
-## GPU mode
-
-GPU mode is optional:
+Normal CIFAR-10 configuration:
 
 ```bash
-python -m src.orchestrator.main --config config/default.yaml --gpu
+automl-nas search --config configs/cifar10.yaml
 ```
 
-GPU trials explicitly request one GPU through Ray. On a one-GPU machine, Ray
-therefore schedules at most one GPU trial at a time and does not silently
-oversubscribe the device.
+The official CIFAR-10 test partition is not loaded during architecture search.
+Candidates are compared using a deterministic split derived from the training
+partition only.
 
-## Checkpoints
+## Generated outputs
 
-Each reported epoch registers a Ray checkpoint containing model state,
-optimizer state, completed epoch, trial configuration, Python/PyTorch RNG
-state, and DataLoader generator state. This supports meaningful trial resume
-for the selected Ray version. Full cross-environment deterministic recovery is
-not claimed.
+Each run creates:
 
-## Current limitations
+```text
+artifacts/runs/<run-id>/
+├── manifest.json
+├── summaries/
+│   └── trials.json
+└── ray/
+    └── tune/                 raw Ray state and checkpoints
+```
 
-- No final benchmark or performance claim is included yet.
-- No official test-set evaluation is performed during search.
-- Only local Ray execution has been validated.
-- The current search is multi-trial NAS, not a weight-sharing SuperNet.
-- Dependency locking, a full test suite, CI, and the final experiment protocol
-  belong to later phases.
-- ASHA is described only as resource-efficient trial pruning; no monetary cost
-  reduction is claimed or measured.
+The manifest records configuration, seeds, software versions, Git state,
+platform details, resources, and execution status. The canonical trial summary
+contains only training and validation information; it intentionally has no
+official test metric.
 
-The old sample metrics file was removed because it was illustrative and could
-not be reproduced from the executable search path.
+Generated `artifacts/`, CIFAR data, and checkpoints are ignored by Git. The
+`results/` directory is reserved for small curated outputs from a future,
+approved experiment protocol.
+
+## Tests and lint
+
+```bash
+ruff check .
+pytest -m "not smoke"
+pytest -m smoke
+```
+
+The smoke test uses synthetic data while exercising the same model, training,
+Ray reporting, checkpoint, scheduler, search, manifest, and result-export path.
+It does not download CIFAR-10 or require a GPU.
+
+## Reproducibility boundaries
+
+- Python, NumPy, PyTorch, dataset-split, DataLoader, and Optuna seeds are
+  controlled and recorded.
+- Deterministic PyTorch algorithms are requested by the supplied configs.
+- Checkpoints preserve model, optimizer, epoch, config, and supported RNG state.
+- Exact GPU reproducibility across hardware and CUDA stacks is not claimed.
+- The normal CIFAR-10 trial budget is provisional and not a final experiment.
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+MIT. See `LICENSE`.
