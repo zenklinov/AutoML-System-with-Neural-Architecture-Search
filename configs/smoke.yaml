@@ -1,0 +1,47 @@
+seed: 2026
+
+data:
+  dataset: synthetic
+  directory: null
+  validation_fraction: 0.25
+  split_seed: 2026
+  num_workers: 0
+  max_train_samples: 48
+  max_validation_samples: 16
+  synthetic_samples: 64
+
+model:
+  input_channels: 3
+  num_classes: 10
+  search_space:
+    num_blocks:
+      min: 2
+      max: 4
+    kernel_sizes: [3, 5]
+    output_channels: [16, 32, 64]
+    activations: ["relu", "silu"]
+    residual: [true, false]
+
+training:
+  batch_size: 16
+  learning_rate: 0.001
+  max_epochs: 1
+  deterministic_algorithms: true
+
+search:
+  strategy: random
+  seed: 2026
+  num_trials: 2
+  metric: validation_accuracy
+  mode: max
+  grace_period_epochs: 1
+  reduction_factor: 2
+  max_concurrent_trials: 1
+
+resources:
+  cpu_per_trial: 1
+  gpu_per_trial: 0
+
+output:
+  root_directory: ../artifacts
+  run_label: smoke

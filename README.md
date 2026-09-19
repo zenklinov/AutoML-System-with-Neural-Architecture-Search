@@ -1,215 +1,142 @@
-# Enterprise AutoML & Neural Architecture Search (NAS) System
-![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
-![Architecture](https://img.shields.io/badge/architecture-distributed-blue)
-![GPU](https://img.shields.io/badge/GPU-spot--optimized-success)
-![Cost](https://img.shields.io/badge/focus-cost--aware-orange)
-![PyTorch](https://img.shields.io/badge/framework-PyTorch-red)
-![Ray](https://img.shields.io/badge/orchestration-Ray_Tune-purple)
-![Optuna](https://img.shields.io/badge/search-Optuna_TPE-blueviolet)
-![CUDA](https://img.shields.io/badge/compute-CUDA-green)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+# Multi-Trial Neural Architecture Search Prototype
 
-> **Production-Grade, Distributed, and Cost-Aware Architecture Search Platform**
+This is a small, reproducible neural architecture search prototype for
+CIFAR-10. It instantiates discrete PyTorch CNN candidates and uses Ray Tune,
+Optuna, and ASHA for local parallel trial orchestration and early stopping.
 
----
+The project is not a production platform, a demonstrated multi-node system, or
+a weight-sharing NAS implementation. No benchmark or model-quality claim is
+included yet.
 
-## Architecture Overview
+## Supported environment
 
-![System Architecture](architecture/system_design.png)
+- Python 3.11.9
+- PyTorch 2.4.0
+- torchvision 0.19.0
+- Ray Tune 2.40.0
+- Optuna 4.0.0
 
-> **Architecture Artifacts**:  
-> [Open Diagram Source (draw.io)](architecture/system_design.drawio) ·  
-> [View Diagram Specification](architecture/diagram_spec.md)
+`pyproject.toml` is the source of truth for direct runtime and development
+dependencies. `requirements.lock` records the fully resolved reference CPU
+environment used for local validation. It is a practical environment lock, not
+a claim of bit-for-bit equivalence across operating systems or CUDA hardware.
 
----
+## Clean installation
 
-## Purpose
-
-Most AutoML and NAS repositories focus on algorithmic novelty.  
-This repository focuses on **system design and operational reality**.
-
-Designing a NAS algorithm is straightforward. Designing a NAS **system** that operates reliably under cost constraints, infrastructure volatility, and distributed execution is not.
-
-This project demonstrates how to:
-
-- **Orchestrate Distributed Search**: Scale from a single GPU to large clusters using Ray Tune without modifying search logic.
-- **Control Compute Spend**: Reduce GPU cost by ~70% through Spot Instances, early termination, and parallel scheduling.
-- **Operate Under Failure**: Recover from preemption, OOMs, and partial node loss without corrupting search state.
-- **Separate Concerns Cleanly**: Isolate orchestration (CPU), training (GPU), and state (storage).
-
-This repository is a **reference architecture**, not an academic experiment.
-
----
-
-## Scope & Non-Goals
-
-To avoid misinterpretation, the following are explicitly out of scope:
-
-- **Managed SaaS Platform**: This is not a multi-tenant, hosted AutoML service.
-- **Feature Engineering Automation**: The focus is neural architecture search, not data preprocessing.
-- **Single-Node Optimization**: While local execution is supported, the architecture is justified only at distributed scale.
-
----
-
-## System Architecture
-
-The system follows a **split-plane design**, separating low-cost control logic from high-cost compute execution.
-
-### Control Plane (Stable, Low Cost)
-
-- **Ray Head Node**  
-  Runs on a CPU-only instance (e.g., `t3.medium`) and maintains global search state.
-
-- **Search Engine (Bayesian Optimization)**  
-  Implemented using Optuna (TPE) to sample promising architectures efficiently.
-
-- **Scheduler (ASHA / HyperBand)**  
-  Continuously evaluates trial performance and aggressively terminates underperforming candidates to preserve budget.
-
-### Compute Plane (Ephemeral, Cost-Optimized)
-
-- **GPU Workers**  
-  Stateless training workers designed explicitly for Spot / Preemptible instances.
-
-- **Failure Recovery**  
-  When a worker is preempted, the orchestrator reschedules the trial and restores weights from the latest checkpoint.
-
-### Execution Flow
-
-1. A user submits a NAS job via CLI or API.
-2. The orchestrator initializes candidate architectures.
-3. The scheduler dispatches trials to available GPU workers.
-4. Workers train for short intervals, report metrics, and receive continuation or termination signals.
-5. Only the top-performing architectures are persisted to the model registry.
-
----
-
-## Observability & Monitoring
-
-Operational visibility is treated as a first-class concern:
-
-- **Per-Trial Telemetry**  
-  Ray Tune captures metrics (loss, accuracy), logs, and failure signals for each trial.
-
-- **Centralized Experiment Tracking**  
-  Integration with MLflow and TensorBoard enables comparison between completed and pruned architectures.
-
-- **Cost Attribution**  
-  Each trial is tagged with runtime duration and node type, enabling precise GPU-hour accounting.  
-  Example output is provided in `results/sample_metrics.csv`.
-
----
-
-## Neural Architecture Search Design
-
-This system performs **true architecture search**, not parameter tuning.
-
-### Search Space
-
-- **Convolutional Blocks**
-  - Kernel sizes: `{3×3, 5×5, 7×7}`
-  - Expansion ratios: `{1, 2, 4}`
-
-- **Attention Blocks**
-  - Heads: `{2, 4, 8}`
-  - MLP ratios: `{2, 4}`
-
-- **Depth Control**
-  - Dynamic depth between 8 and 32 layers using stochastic depth sampling.
-
-### Search Strategy
-
-- **Bayesian Optimization (TPE)**  
-  Prioritizes promising regions of the search space and converges significantly faster than random search.
-
-- **ASHA Early Stopping**  
-  Implements a strict “fail fast” policy, terminating poorly performing architectures after minimal compute investment.
-
----
-
-## Cost Analysis
-
-A naïve NAS implementation on ImageNet-scale workloads can cost hundreds of dollars.  
-This architecture is designed to reduce that cost by an order of magnitude.
-
-### Baseline Configuration
-
-- Instance: AWS `g4dn.xlarge` (On-Demand)
-- Trials: 50
-- Epochs per trial: 20
-- Cost per hour: $0.526  
-- **Estimated total**: ~$52.60
-
-### Optimized Configuration (This System)
-
-- Instance: AWS Spot `g4dn.xlarge`
-- Average Spot price: ~$0.158/hour
-- Early termination rate: ~70%
-- Parallel execution eliminates idle time  
-- **Estimated total**: **< $5.00**
-
-**Business impact**: Comparable model quality achieved at <10% of the cost of a full grid search.
-
----
-
-## Failure & Recovery Model
-
-Failure is assumed and explicitly designed for.
-
-| Failure Scenario | Mitigation |
-|------------------|------------|
-| GPU OOM | Trial is marked as pruned and excluded from future sampling. |
-| Spot preemption | Trial is rescheduled automatically and resumed from checkpoint. |
-| Orchestrator restart | Search state is persisted and resumes without manual intervention. |
-
----
-
-## Security Considerations
-
-- **Network Isolation**  
-  The Ray cluster is intended to run inside a private VPC with no public ingress.
-
-- **Secrets Management**  
-  Cloud credentials are provided via IAM roles or environment variables, never embedded in code.
-
-- **Serialization Trust Model**  
-  PyTorch/Ray serialization assumes trusted internal execution; untrusted artifact ingestion is out of scope.
-
----
-
-## Repository Structure
+CPU installation:
 
 ```bash
-AutoML-System-with-Neural-Architecture-Search/
-├── architecture/
-│   ├── system_design.drawio
-│   └── diagram_spec.md
-├── src/
-│   ├── orchestrator/
-│   ├── nas/
-│   ├── training/
-│   └── evaluation/
-├── config/
-│   ├── search_space.yaml
-│   └── runtime.yaml
-└── scripts/
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install torch==2.4.0 torchvision==0.19.0 \
+  --index-url https://download.pytorch.org/whl/cpu
+python -m pip install -e ".[dev]"
 ```
 
-## Getting Started
+To reproduce the locally resolved dependency set, install
+`requirements.lock`, then install the package without dependency resolution:
 
-### Prerequisites
-*   Python 3.9+
-*   CUDA 11.x (or CPU mode for testing)
-*   Ray Cluster (Local or K8s)
-
-### Execution
 ```bash
-# 1. Install Dependencies
-pip install -r requirements.txt
-
-# 2. Run Search (Local Mode)
-./scripts/run_search.sh bayesian 20
+python -m pip install -r requirements.lock
+python -m pip install -e . --no-deps --no-build-isolation
 ```
 
----
+GPU users must install the PyTorch 2.4.0 wheel matching their supported CUDA
+runtime before installing this project. GPU determinism is not guaranteed
+across different drivers, devices, or CUDA libraries.
 
+## Package structure
+
+```text
+src/automl_nas/
+├── config.py       validated YAML contract
+├── data.py         deterministic train/validation data isolation
+├── models.py       configurable block and discrete CNN candidate
+├── training.py     training, evaluation, checkpoint, and RNG state
+├── search.py       Optuna/ASHA/Ray orchestration
+├── artifacts.py    provenance manifest and canonical result schema
+└── cli.py          installed command-line interface
+```
+
+## Configuration
+
+- `configs/smoke.yaml`: two-trial CPU pipeline check using deterministic
+  synthetic data. Its accuracy is not experimental evidence.
+- `configs/cifar10.yaml`: intended CIFAR-10 search structure with a provisional
+  local budget. Phase 3 will define the actual experiment protocol.
+
+Configurations reject unknown fields and unsupported architecture choices.
+The YAML file is authoritative; the CLI selects a config but does not silently
+override its values.
+
+Validate a config:
+
+```bash
+automl-nas validate-config --config configs/smoke.yaml
+```
+
+## Run
+
+CPU smoke search:
+
+```bash
+automl-nas search --config configs/smoke.yaml
+```
+
+Normal CIFAR-10 configuration:
+
+```bash
+automl-nas search --config configs/cifar10.yaml
+```
+
+The official CIFAR-10 test partition is not loaded during architecture search.
+Candidates are compared using a deterministic split derived from the training
+partition only.
+
+## Generated outputs
+
+Each run creates:
+
+```text
+artifacts/runs/<run-id>/
+├── manifest.json
+├── summaries/
+│   └── trials.json
+└── ray/
+    └── tune/                 raw Ray state and checkpoints
+```
+
+The manifest records configuration, seeds, software versions, Git state,
+platform details, resources, and execution status. The canonical trial summary
+contains only training and validation information; it intentionally has no
+official test metric.
+
+Generated `artifacts/`, CIFAR data, and checkpoints are ignored by Git. The
+`results/` directory is reserved for small curated outputs from a future,
+approved experiment protocol.
+
+## Tests and lint
+
+```bash
+ruff check .
+pytest -m "not smoke"
+pytest -m smoke
+```
+
+The smoke test uses synthetic data while exercising the same model, training,
+Ray reporting, checkpoint, scheduler, search, manifest, and result-export path.
+It does not download CIFAR-10 or require a GPU.
+
+## Reproducibility boundaries
+
+- Python, NumPy, PyTorch, dataset-split, DataLoader, and Optuna seeds are
+  controlled and recorded.
+- Deterministic PyTorch algorithms are requested by the supplied configs.
+- Checkpoints preserve model, optimizer, epoch, config, and supported RNG state.
+- Exact GPU reproducibility across hardware and CUDA stacks is not claimed.
+- The normal CIFAR-10 trial budget is provisional and not a final experiment.
+
+## License
+
+MIT. See `LICENSE`.

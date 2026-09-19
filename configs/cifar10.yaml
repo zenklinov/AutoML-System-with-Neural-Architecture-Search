@@ -1,0 +1,48 @@
+seed: 2026
+
+data:
+  dataset: cifar10
+  directory: ../data
+  validation_fraction: 0.10
+  split_seed: 2026
+  num_workers: 0
+  max_train_samples: null
+  max_validation_samples: null
+  synthetic_samples: null
+
+model:
+  input_channels: 3
+  num_classes: 10
+  search_space:
+    num_blocks:
+      min: 2
+      max: 4
+    kernel_sizes: [3, 5]
+    output_channels: [16, 32, 64]
+    activations: ["relu", "silu"]
+    residual: [true, false]
+
+training:
+  batch_size: 64
+  learning_rate: 0.001
+  max_epochs: 10
+  deterministic_algorithms: true
+
+search:
+  strategy: bayesian
+  seed: 2026
+  # Provisional local budget only; Phase 3 will define the experiment protocol.
+  num_trials: 10
+  metric: validation_accuracy
+  mode: max
+  grace_period_epochs: 2
+  reduction_factor: 2
+  max_concurrent_trials: 2
+
+resources:
+  cpu_per_trial: 1
+  gpu_per_trial: 0
+
+output:
+  root_directory: ../artifacts
+  run_label: cifar10-search
