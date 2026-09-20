@@ -1,0 +1,7 @@
+name: fixed reference baseline
+architecture:
+  num_blocks: 3
+  blocks:
+    - {kernel_size: 3, out_channels: 32, activation: relu, residual: true}
+    - {kernel_size: 3, out_channels: 64, activation: relu, residual: true}
+    - {kernel_size: 3, out_channels: 64, activation: relu, residual: true}

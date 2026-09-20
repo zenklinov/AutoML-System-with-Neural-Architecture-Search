@@ -1,9 +1,10 @@
-"""Dataset isolation and deterministic search data loaders."""
+"""Training-partition data isolation, stratification, and transforms."""
 
 from __future__ import annotations
 
 import random
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import torch
@@ -20,24 +21,60 @@ class SearchDataLoaders:
     generator: torch.Generator
 
 
+class TransformSubset(Dataset):
+    """Apply a split-specific transform to one underlying dataset."""
+
+    def __init__(self, dataset: Dataset, indices: list[int], transform: Any) -> None:
+        self.dataset, self.indices, self.transform = dataset, indices, transform
+
+    def __len__(self) -> int:
+        return len(self.indices)
+
+    def __getitem__(self, index: int) -> tuple[Any, Any]:
+        image, target = self.dataset[self.indices[index]]
+        return self.transform(image), target
+
+
 def create_split_indices(
-    dataset_size: int,
-    validation_fraction: float,
-    seed: int,
+    dataset_size: int, validation_fraction: float, seed: int
 ) -> tuple[list[int], list[int]]:
-    """Create deterministic, disjoint train and validation indices."""
-    if dataset_size < 2:
-        raise ValueError("dataset_size must be at least 2")
-    if not 0.0 < validation_fraction < 1.0:
-        raise ValueError("validation_fraction must be between 0 and 1")
-    validation_size = max(1, int(dataset_size * validation_fraction))
-    generator = torch.Generator().manual_seed(seed)
-    indices = torch.randperm(dataset_size, generator=generator).tolist()
-    return indices[validation_size:], indices[:validation_size]
+    """Compatibility helper for synthetic data only."""
+    if dataset_size < 2 or not 0 < validation_fraction < 1:
+        raise ValueError("invalid split")
+    size = max(1, int(dataset_size * validation_fraction))
+    g = torch.Generator().manual_seed(seed)
+    indices = torch.randperm(dataset_size, generator=g).tolist()
+    return indices[size:], indices[:size]
+
+
+def create_stratified_split_indices(
+    labels: list[int] | torch.Tensor, validation_fraction: float, seed: int
+) -> tuple[list[int], list[int]]:
+    """Create deterministic, disjoint per-class splits, then shuffle each split."""
+    values = np.asarray(labels, dtype=np.int64)
+    if values.ndim != 1 or len(values) < 2 or not 0 < validation_fraction < 1:
+        raise ValueError("invalid stratified split")
+    generator = np.random.default_rng(seed)
+    train_indices = []
+    validation_indices = []
+    for class_id in sorted(np.unique(values).tolist()):
+        class_indices = np.flatnonzero(values == class_id)
+        validation_size = int(len(class_indices) * validation_fraction)
+        if validation_size < 1 or validation_size >= len(class_indices):
+            raise ValueError("every class must occur in both splits")
+        shuffled = generator.permutation(class_indices)
+        validation_indices.extend(shuffled[:validation_size].tolist())
+        train_indices.extend(shuffled[validation_size:].tolist())
+    generator.shuffle(train_indices)
+    generator.shuffle(validation_indices)
+    train = train_indices
+    validation = validation_indices
+    if set(train) & set(validation) or len(train) + len(validation) != len(values):
+        raise RuntimeError("split isolation invariant failed")
+    return train, validation
 
 
 def seed_worker(worker_id: int) -> None:
-    """Seed Python and NumPy from PyTorch's deterministic worker seed."""
     del worker_id
     worker_seed = torch.initial_seed() % (2**32)
     random.seed(worker_seed)
@@ -45,85 +82,101 @@ def seed_worker(worker_id: int) -> None:
 
 
 def prepare_search_dataset(config: DataConfig) -> None:
-    """Download only the CIFAR-10 training archive before trials start."""
     if config.dataset == "cifar10":
         assert config.directory is not None
         datasets.CIFAR10(root=str(config.directory), train=True, download=True)
 
 
-def _synthetic_dataset(config: DataConfig, model: ModelConfig) -> TensorDataset:
-    generator = torch.Generator().manual_seed(config.split_seed)
+def _synthetic(config: DataConfig, model: ModelConfig) -> TensorDataset:
+    g = torch.Generator().manual_seed(config.split_seed)
     assert config.synthetic_samples is not None
-    images = torch.randn(
-        config.synthetic_samples,
-        model.input_channels,
-        32,
-        32,
-        generator=generator,
+    return TensorDataset(
+        torch.randn(config.synthetic_samples, model.input_channels, 32, 32, generator=g),
+        torch.randint(0, model.num_classes, (config.synthetic_samples,), generator=g),
     )
-    labels = torch.randint(
-        low=0,
-        high=model.num_classes,
-        size=(config.synthetic_samples,),
-        generator=generator,
-    )
-    return TensorDataset(images, labels)
 
 
 def build_search_dataset(config: DataConfig, model: ModelConfig) -> Dataset:
-    """Return search data; CIFAR-10 always uses its official training partition."""
+    """Load only the official training partition, without transforms."""
     if config.dataset == "synthetic":
-        return _synthetic_dataset(config, model)
+        return _synthetic(config, model)
     assert config.directory is not None
-    transform = transforms.Compose(
+    return datasets.CIFAR10(root=str(config.directory), train=True, download=False, transform=None)
+
+
+def build_transforms(config: DataConfig) -> tuple[Any, Any]:
+    normalization = transforms.Normalize(config.normalization.mean, config.normalization.std)
+    evaluation = transforms.Compose([transforms.ToTensor(), normalization])
+    training = transforms.Compose(
         [
+            transforms.RandomCrop(32, padding=config.augmentation.random_crop_padding),
+            transforms.RandomHorizontalFlip(config.augmentation.horizontal_flip_probability),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            normalization,
         ]
     )
-    return datasets.CIFAR10(
-        root=str(config.directory),
-        train=True,
-        download=False,
-        transform=transform,
-    )
+    return training, evaluation
 
 
 def get_search_data_loaders(
-    data_config: DataConfig,
-    model_config: ModelConfig,
-    batch_size: int,
-    training_seed: int,
+    data_config: DataConfig, model_config: ModelConfig, batch_size: int, training_seed: int
 ) -> SearchDataLoaders:
-    """Build deterministic loaders without accessing an official test partition."""
     dataset = build_search_dataset(data_config, model_config)
-    train_indices, validation_indices = create_split_indices(
-        len(dataset), data_config.validation_fraction, data_config.split_seed
-    )
+    if data_config.dataset == "cifar10":
+        train_indices, validation_indices = create_stratified_split_indices(
+            dataset.targets, data_config.validation_fraction, data_config.split_seed
+        )  # type: ignore[attr-defined]
+        train_transform, validation_transform = build_transforms(data_config)
+        train_dataset: Dataset = TransformSubset(dataset, train_indices, train_transform)
+        validation_dataset: Dataset = TransformSubset(
+            dataset, validation_indices, validation_transform
+        )
+    else:
+        train_indices, validation_indices = create_split_indices(
+            len(dataset), data_config.validation_fraction, data_config.split_seed
+        )
+        train_dataset = Subset(dataset, train_indices)
+        validation_dataset = Subset(dataset, validation_indices)
     if data_config.max_train_samples is not None:
-        train_indices = train_indices[: data_config.max_train_samples]
+        train_dataset = Subset(
+            train_dataset, range(min(data_config.max_train_samples, len(train_dataset)))
+        )
     if data_config.max_validation_samples is not None:
-        validation_indices = validation_indices[: data_config.max_validation_samples]
-    if not train_indices or not validation_indices:
-        raise ValueError("configured search split must contain train and validation samples")
-
+        validation_dataset = Subset(
+            validation_dataset,
+            range(min(data_config.max_validation_samples, len(validation_dataset))),
+        )
+    if not len(train_dataset) or not len(validation_dataset):
+        raise ValueError("split must contain train and validation samples")
     generator = torch.Generator().manual_seed(training_seed)
-    common_options = {
+    common = {
         "batch_size": batch_size,
         "num_workers": data_config.num_workers,
         "worker_init_fn": seed_worker if data_config.num_workers else None,
     }
     return SearchDataLoaders(
-        train=DataLoader(
-            Subset(dataset, train_indices),
-            shuffle=True,
-            generator=generator,
-            **common_options,
-        ),
-        validation=DataLoader(
-            Subset(dataset, validation_indices),
-            shuffle=False,
-            **common_options,
-        ),
-        generator=generator,
+        DataLoader(train_dataset, shuffle=True, generator=generator, **common),
+        DataLoader(validation_dataset, shuffle=False, **common),
+        generator,
     )
+
+
+def get_full_training_loader(
+    data_config: DataConfig, model_config: ModelConfig, batch_size: int, training_seed: int
+) -> tuple[DataLoader, torch.Generator]:
+    """Load all 50,000 official training examples; never loads the test partition."""
+    dataset = build_search_dataset(data_config, model_config)
+    if data_config.dataset == "cifar10":
+        dataset = TransformSubset(
+            dataset, list(range(len(dataset))), build_transforms(data_config)[0]
+        )
+    generator = torch.Generator().manual_seed(training_seed)
+    loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        generator=generator,
+        num_workers=data_config.num_workers,
+        worker_init_fn=seed_worker if data_config.num_workers else None,
+    )
+    return loader, generator

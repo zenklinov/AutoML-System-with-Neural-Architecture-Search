@@ -1,14 +1,22 @@
-seed: 2026
+seed: 4242
 
 data:
   dataset: cifar10
   directory: ../data
   validation_fraction: 0.10
   split_seed: 2026
+  stratified: true
   num_workers: 0
   max_train_samples: null
   max_validation_samples: null
   synthetic_samples: null
+  normalization:
+    mean: [0.49151359443082787, 0.48231470971200985, 0.44681383799700436]
+    std: [0.24705092701492043, 0.24347971893365994, 0.2615095063426509]
+    provenance: "Frozen from the seed-2026 stratified 45,000-example training split; replace only by the audited computation command."
+  augmentation:
+    random_crop_padding: 4
+    horizontal_flip_probability: 0.5
 
 model:
   input_channels: 3
@@ -24,24 +32,42 @@ model:
 
 training:
   batch_size: 64
+  optimizer: adam
   learning_rate: 0.001
-  max_epochs: 10
+  weight_decay: 0.0001
+  lr_scheduler: none
+  evaluation_interval_epochs: 1
+  max_epochs: 12
   deterministic_algorithms: true
 
 search:
   strategy: bayesian
   seed: 2026
-  # Provisional local budget only; Phase 3 will define the experiment protocol.
+  # Provisional calibration-safe budget. It is not the final locked budget.
   num_trials: 10
   metric: validation_accuracy
   mode: max
-  grace_period_epochs: 2
+  time_attr: training_iteration
+  max_t: 12
+  grace_period_epochs: 12
   reduction_factor: 2
-  max_concurrent_trials: 2
+  max_concurrent_trials: 1
+  tpe:
+    n_startup_trials: 10
+    n_ei_candidates: 24
+    multivariate: false
+    constant_liar: false
 
 resources:
   cpu_per_trial: 1
   gpu_per_trial: 0
+
+protocol:
+  candidate_search_seeds: [2026, 2027, 2028]
+  search_training_seed: 4242
+  confirmation_seeds: [3101, 3102, 3103]
+  final_training_seeds: [4101, 4102, 4103, 4104, 4105]
+  final_budget_locked: false
 
 output:
   root_directory: ../artifacts
