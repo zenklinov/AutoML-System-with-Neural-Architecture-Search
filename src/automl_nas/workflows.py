@@ -65,6 +65,7 @@ def _train_validation(
                 "wall_clock_time_utc": datetime.now(UTC).isoformat(),
             }
         )
+    duration_seconds = time.perf_counter() - start
     return {
         "architecture": architecture,
         "architecture_id": architecture_id(architecture),
@@ -73,7 +74,10 @@ def _train_validation(
         "history": history,
         "best_validation_accuracy": max(row["validation_accuracy"] for row in history),
         "final_validation_accuracy": history[-1]["validation_accuracy"],
-        "duration_seconds": time.perf_counter() - start,
+        "duration_seconds": duration_seconds,
+        "cpu_hours": duration_seconds * config.resources.cpu_per_trial / 3600,
+        "gpu_hours": duration_seconds * config.resources.gpu_per_trial / 3600,
+        "device_type": device.type,
     }
 
 

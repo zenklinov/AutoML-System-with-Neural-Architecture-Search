@@ -101,3 +101,17 @@ automl-nas evaluate-locked-test --config <locked-config.yaml> --final-models <fi
 ```
 
 The manifest records software/hardware. Deterministic algorithms are requested, but bit-for-bit equivalence across CUDA devices, drivers, or libraries is not claimed.
+
+## Resource-policy amendment — 2026-09-20
+
+The initial one-CPU calibration was stopped as `ABORTED — ProtocolFeasibilityStop` after
+the smallest 8,074-parameter panel architecture required 2,622.47 seconds for 12 epochs.
+That incomplete CPU run is feasibility evidence only and must not be combined with GPU
+calibration or search results.
+
+Calibration, Random pilot, and TPE pilot now use one NVIDIA GPU per trial, one trial at a
+time, and the separately pinned `requirements.cuda.lock` environment. Their training
+recipe, split, transforms, architecture space, seeds, and strategy fairness rules are
+unchanged. CPU installation, smoke tests, and GitHub Actions remain supported through
+`requirements.lock`; CUDA is not a general project dependency. Fresh GPU calibration is
+required before selecting a pilot grace period. The final budget remains unlocked.

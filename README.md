@@ -35,7 +35,7 @@ python -m pip install torch==2.4.0 torchvision==0.19.0 \
 python -m pip install -e ".[dev]"
 ```
 
-To reproduce the locally resolved dependency set, install
+To reproduce the locally resolved CPU dependency set, install
 `requirements.lock`, then install the package without dependency resolution:
 
 ```bash
@@ -43,9 +43,20 @@ python -m pip install -r requirements.lock
 python -m pip install -e . --no-deps --no-build-isolation
 ```
 
-GPU users must install the PyTorch 2.4.0 wheel matching their supported CUDA
-runtime before installing this project. GPU determinism is not guaranteed
-across different drivers, devices, or CUDA libraries.
+CUDA experiments use a separate lock so CPU development and CI remain unchanged:
+
+```bash
+python -m venv .venv-cuda
+source .venv-cuda/bin/activate  # Windows: .venv-cuda\Scripts\Activate.ps1
+python -m pip install -r requirements.cuda.lock
+python -m pip install -e . --no-deps --no-build-isolation
+python scripts/gpu_smoke.py
+```
+
+The CUDA lock retains PyTorch 2.4.0 and torchvision 0.19.0 and selects their
+CUDA 12.4 wheels. GPU determinism is requested but is not guaranteed across
+different drivers, devices, or CUDA libraries. The CUDA environment is for
+experiments; `requirements.lock` remains the CPU CI/development reference.
 
 ## Package structure
 
