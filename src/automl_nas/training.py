@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import random
 import tempfile
 import time
@@ -28,6 +29,8 @@ from automl_nas.models import CandidateCNN
 
 def set_global_seed(seed: int, deterministic_algorithms: bool) -> None:
     """Seed supported RNGs and request deterministic kernels where practical."""
+    if deterministic_algorithms:
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
