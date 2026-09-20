@@ -63,7 +63,9 @@ def test_ray_trainable_reports_expected_metrics(monkeypatch, smoke_config) -> No
         "train_loss",
         "validation_loss",
         "validation_accuracy",
-    } == set(reports[0])
+    } <= set(reports[0])
+    assert reports[0]["parameter_count"] > 0
+    assert reports[0]["elapsed_trial_seconds"] >= 0
 
 
 def test_checkpoint_round_trip_and_resume_training(smoke_config) -> None:

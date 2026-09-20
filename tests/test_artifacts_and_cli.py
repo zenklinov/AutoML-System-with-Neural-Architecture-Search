@@ -21,17 +21,20 @@ def test_manifest_contains_required_provenance(smoke_config) -> None:
         "smoke-20260101T000000Z-12345678",
         command=["automl-nas", "search", "--config", "configs/smoke.yaml"],
     )
-    assert manifest["schema_version"] == 1
+    assert manifest["schema_version"] == 2
     assert manifest["run_id"].startswith("smoke-")
     assert manifest["git"]["available"] is True
     assert len(manifest["git"]["commit_sha"]) == 40
-    assert set(manifest["seeds"]) == {"training", "dataset_split", "search"}
-    assert {"python", "torch", "torchvision", "ray", "optuna"} <= set(
-        manifest["software"]
-    )
-    assert {"os", "logical_cpu_count", "gpu_models", "cuda_available"} <= set(
-        manifest["system"]
-    )
+    assert {
+        "training",
+        "dataset_split",
+        "search",
+        "candidate_search",
+        "confirmation",
+        "final_training",
+    } == set(manifest["seeds"])
+    assert {"python", "torch", "torchvision", "ray", "optuna"} <= set(manifest["software"])
+    assert {"os", "logical_cpu_count", "gpu_models", "cuda_available"} <= set(manifest["system"])
     serialized = json.dumps(manifest)
     assert "username" not in serialized.lower()
     assert "hostname" not in serialized.lower()
@@ -46,6 +49,7 @@ def test_result_schema_matches_executable_fields(smoke_config, tmp_path: Path) -
         "validation_loss": 2.3,
         "train_loss": 2.4,
         "time_total_s": 0.5,
+        "parameter_count": 8074,
     }
     result = SimpleNamespace(
         metrics=metrics,
@@ -62,6 +66,22 @@ def test_result_schema_matches_executable_fields(smoke_config, tmp_path: Path) -
     trial = document["trials"][0]
     assert trial["status"] == "COMPLETED"
     assert trial["validation_accuracy"] == 0.1
+    assert document["history"]
+    assert {
+        "run_id",
+        "trial_id",
+        "strategy",
+        "search_seed",
+        "architecture",
+        "epoch",
+        "parameter_count",
+        "elapsed_trial_seconds",
+        "status",
+    } <= set(document["history"][0])
+    assert document["aggregate"]["epochs_consumed"] == 1
+    assert {"started_at_utc", "finished_at_utc", "epochs_consumed", "pruning_iteration"} <= set(
+        trial
+    )
     assert not any("test" in key for key in trial)
 
 

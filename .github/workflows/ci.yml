@@ -21,6 +21,13 @@ jobs:
         run: python -m pip install -e . --no-deps --no-build-isolation
       - name: Lint
         run: ruff check .
+      - name: Validate protocol configurations
+        run: |
+          automl-nas validate-config --config configs/smoke.yaml
+          automl-nas validate-config --config configs/cifar10.yaml
+          automl-nas validate-config --config configs/scheduler_calibration.yaml
+          automl-nas validate-config --config configs/pilot_random.yaml
+          automl-nas validate-config --config configs/pilot_tpe.yaml
       - name: Unit and integration tests
         run: pytest -m "not smoke"
       - name: CPU smoke test

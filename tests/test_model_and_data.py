@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -8,7 +9,11 @@ import torch
 from conftest import make_architecture
 from torch.utils.data import TensorDataset
 
-from automl_nas.data import build_search_dataset, create_split_indices
+from automl_nas.data import (
+    build_search_dataset,
+    create_split_indices,
+    create_stratified_split_indices,
+)
 from automl_nas.models import CandidateCNN, ConfigurableConvBlock
 from automl_nas.training import set_global_seed
 
@@ -42,12 +47,12 @@ def test_search_never_requests_official_cifar_test_data(monkeypatch, smoke_confi
         calls.append(train)
         return TensorDataset(torch.randn(20, 3, 32, 32), torch.zeros(20, dtype=torch.long))
 
-    cifar_config = smoke_config.data.__class__(
+    cifar_config = replace(
+        smoke_config.data,
         dataset="cifar10",
         directory=smoke_config.output.root_directory / "data",
         validation_fraction=0.2,
         split_seed=1,
-        num_workers=0,
         max_train_samples=None,
         max_validation_samples=None,
         synthetic_samples=None,
@@ -55,6 +60,14 @@ def test_search_never_requests_official_cifar_test_data(monkeypatch, smoke_confi
     monkeypatch.setattr("automl_nas.data.datasets.CIFAR10", fake_cifar)
     build_search_dataset(cifar_config, smoke_config.model)
     assert calls == [True]
+
+
+def test_stratified_split_has_exact_class_balance() -> None:
+    labels = np.repeat(np.arange(10), 5_000)
+    train, validation = create_stratified_split_indices(labels, 0.1, 2026)
+    assert np.bincount(labels[train]).tolist() == [4_500] * 10
+    assert np.bincount(labels[validation]).tolist() == [500] * 10
+    assert set(train).isdisjoint(validation)
 
 
 def test_global_seed_controls_python_numpy_and_torch() -> None:
