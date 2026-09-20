@@ -1,0 +1,7 @@
+architecture_id,blocks,has_residual,all_residual,has_silu,all_silu,parameter_count,duration_seconds,epoch_2_rank,epoch_4_rank,epoch_6_rank,final_validation_accuracy,final_rank
+a83ea7b58d95ed4f,2,False,False,False,False,8074,597.9248253000005,6.0,6.0,6.0,0.5838,6.0
+705b59bb327205f7,2,True,True,True,True,157482,613.2963331999999,5.0,5.0,5.0,0.6928,5.0
+a73c7cf20a8bf855,3,True,True,False,False,68458,613.4109076999994,4.0,4.0,4.0,0.714,4.0
+0bdd44692f5e42bb,3,True,False,True,False,70922,641.3502751999986,3.0,2.0,3.0,0.758,3.0
+52d58d4515c54422,4,True,True,False,False,69514,546.2262173000017,2.0,3.0,2.0,0.794,2.0
+c88579b3ad9a3218,4,True,False,True,False,360490,1155.3324505000019,1.0,1.0,1.0,0.8294,1.0

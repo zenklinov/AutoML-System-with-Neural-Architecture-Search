@@ -1,4 +1,4 @@
-# PROVISIONAL comparative pilot template. Do not treat this as the final budget.
+# Calibration-selected comparative pilot. Diagnostic only; not the final budget.
 seed: 4242
 data:
   dataset: cifar10
@@ -36,7 +36,7 @@ training:
 search:
   strategy: bayesian
   seed: 2026
-  num_trials: 12
+  num_trials: 16
   metric: validation_accuracy
   mode: max
   time_attr: training_iteration

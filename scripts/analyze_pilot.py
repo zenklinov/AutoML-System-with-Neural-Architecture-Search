@@ -432,6 +432,7 @@ def _lifecycle_svg(rows: list[dict[str, Any]], output: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--calibration", type=Path, required=True)
+    parser.add_argument("--calibration-manifest", type=Path)
     parser.add_argument("--random", type=Path)
     parser.add_argument("--tpe", type=Path)
     parser.add_argument("--output-directory", type=Path, required=True)
@@ -441,6 +442,23 @@ def main() -> None:
     output = arguments.output_directory
     output.mkdir(parents=True, exist_ok=True)
     _write_json(output / "calibration_analysis.json", report)
+    if arguments.calibration_manifest:
+        manifest = _read_json(arguments.calibration_manifest)
+        _write_json(
+            output / "calibration_provenance.json",
+            {
+                "run_id": manifest["run_id"],
+                "status": manifest["status"],
+                "started_at_utc": manifest["started_at_utc"],
+                "finished_at_utc": manifest["finished_at_utc"],
+                "git": manifest["git"],
+                "software": manifest["software"],
+                "system": manifest["system"],
+                "execution": manifest["execution"],
+                "seeds": manifest["seeds"],
+                "official_test_access": calibration["official_test_access"],
+            },
+        )
     _write_csv(output / "calibration_epochs.csv", epoch_rows)
     _write_csv(output / "calibration_architectures.csv", report["architectures"])
     _calibration_svg(epoch_rows, output / "calibration_learning_curves.svg", ranks=False)

@@ -115,3 +115,14 @@ recipe, split, transforms, architecture space, seeds, and strategy fairness rule
 unchanged. CPU installation, smoke tests, and GitHub Actions remain supported through
 `requirements.lock`; CUDA is not a general project dependency. Fresh GPU calibration is
 required before selecting a pilot grace period. The final budget remains unlocked.
+
+### GPU calibration decision
+
+Run `asha-calibration-20260920T111018Z-fece8078` completed all six fixed architectures
+from Git commit `dcbd734317e4c52021879038e27548bb50690ebd` on the RTX 4060 Laptop GPU.
+All final top-three architectures were already in the top half at every epoch; epoch-4
+Spearman rank correlation with epoch 12 was 0.943. The panel showed no late-learning
+architecture at risk of missing the final top half. The comparative pilot therefore keeps
+`grace_period_epochs: 4`, `reduction_factor: 2`, `max_t: 12`, and concurrency one. Its
+paired diagnostic budget is 16 trials per strategy at search seed 2026, providing six
+post-startup TPE suggestions. These are pilot settings, not final-budget decisions.
