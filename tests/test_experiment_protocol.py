@@ -16,7 +16,12 @@ from automl_nas.locked_test import run_locked_test_evaluation
 from automl_nas.models import CandidateCNN
 from automl_nas.protocol import REFERENCE_BASELINE_PARAMETER_COUNT, trainable_parameter_count
 from automl_nas.search import create_search_algorithm
-from automl_nas.workflows import load_calibration_panel, run_confirmation, run_final_training
+from automl_nas.workflows import (
+    load_calibration_panel,
+    run_calibration,
+    run_confirmation,
+    run_final_training,
+)
 
 
 def test_frozen_transforms_and_statistics(smoke_config) -> None:
@@ -64,6 +69,37 @@ def test_calibration_panel_architectures_construct() -> None:
     assert {item["num_blocks"] for item in panel} == {2, 3, 4}
     for architecture in panel:
         CandidateCNN(architecture)
+
+
+def test_calibration_persists_completed_records_before_failure(
+    monkeypatch, smoke_config, tmp_path: Path
+) -> None:
+    panel = tmp_path / "panel.yaml"
+    panel.write_text(
+        yaml.safe_dump({"architectures": [make_architecture(2), make_architecture(3)]}),
+        encoding="utf-8",
+    )
+    calls = 0
+
+    def train(config, architecture, seed):
+        nonlocal calls
+        del config, seed
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("simulated interruption")
+        return {"architecture": architecture, "seed": 4242, "history": []}
+
+    monkeypatch.setattr("automl_nas.workflows.prepare_search_dataset", lambda config: None)
+    monkeypatch.setattr("automl_nas.workflows._train_validation", train)
+    with pytest.raises(RuntimeError, match="simulated interruption"):
+        run_calibration(smoke_config, panel)
+
+    summary = next(smoke_config.output.root_directory.glob("runs/*/summaries/calibration.json"))
+    document = json.loads(summary.read_text(encoding="utf-8"))
+    manifest = json.loads((summary.parents[1] / "manifest.json").read_text(encoding="utf-8"))
+    assert document["status"] == "FAILED"
+    assert len(document["records"]) == 1
+    assert manifest["status"] == "FAILED"
 
 
 def test_confirmation_uses_only_completed_trials_and_confirmation_seeds(

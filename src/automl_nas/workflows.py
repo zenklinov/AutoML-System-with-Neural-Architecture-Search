@@ -224,25 +224,39 @@ def run_calibration(config: ExperimentConfig, panel_path: Path) -> Path:
         artifacts={"calibration_summary": "summaries/calibration.json"},
     )
     write_json(manifest_path, manifest)
-    prepare_search_dataset(config.data)
-    records = [
-        _train_validation(config, a, config.protocol.search_training_seed)
-        for a in load_calibration_panel(panel_path)
-    ]
     output = root / "summaries" / "calibration.json"
-    write_json(
-        output,
-        {
-            "schema_version": 1,
-            "stage": "asha_calibration",
-            "run_id": run_id,
-            "generated_at_utc": datetime.now(UTC).isoformat(),
-            "panel_source": str(panel_path),
-            "uses_asha": False,
-            "official_test_access": False,
-            "records": records,
-        },
-    )
+    records: list[dict[str, Any]] = []
+
+    def persist(status: str, error: BaseException | None = None) -> None:
+        write_json(
+            output,
+            {
+                "schema_version": 1,
+                "stage": "asha_calibration",
+                "run_id": run_id,
+                "generated_at_utc": datetime.now(UTC).isoformat(),
+                "panel_source": str(panel_path),
+                "uses_asha": False,
+                "official_test_access": False,
+                "status": status,
+                "error": ({"type": type(error).__name__, "message": str(error)} if error else None),
+                "records": records,
+            },
+        )
+
+    persist("RUNNING")
+    try:
+        prepare_search_dataset(config.data)
+        for architecture in load_calibration_panel(panel_path):
+            records.append(
+                _train_validation(config, architecture, config.protocol.search_training_seed)
+            )
+            persist("RUNNING")
+    except BaseException as error:
+        persist("FAILED", error)
+        finalize_manifest(manifest, manifest_path, "FAILED", error)
+        raise
+    persist("COMPLETED")
     finalize_manifest(manifest, manifest_path, "COMPLETED")
     return output
 
