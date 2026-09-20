@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import random
 import tempfile
+import time
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +15,13 @@ from ray import train
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from automl_nas.config import ArchitectureSpaceConfig, DataConfig, ModelConfig
+from automl_nas.config import (
+    ArchitectureSpaceConfig,
+    AugmentationConfig,
+    DataConfig,
+    ModelConfig,
+    NormalizationConfig,
+)
 from automl_nas.data import get_search_data_loaders
 from automl_nas.models import CandidateCNN
 
@@ -37,10 +45,20 @@ def _data_config(raw: dict[str, Any]) -> DataConfig:
         directory=Path(raw["directory"]) if raw["directory"] is not None else None,
         validation_fraction=float(raw["validation_fraction"]),
         split_seed=int(raw["split_seed"]),
+        stratified=bool(raw["stratified"]),
         num_workers=int(raw["num_workers"]),
         max_train_samples=raw["max_train_samples"],
         max_validation_samples=raw["max_validation_samples"],
         synthetic_samples=raw["synthetic_samples"],
+        normalization=NormalizationConfig(
+            mean=tuple(raw["normalization"]["mean"]),
+            std=tuple(raw["normalization"]["std"]),
+            provenance=str(raw["normalization"]["provenance"]),
+        ),
+        augmentation=AugmentationConfig(
+            random_crop_padding=int(raw["augmentation"]["random_crop_padding"]),
+            horizontal_flip_probability=float(raw["augmentation"]["horizontal_flip_probability"]),
+        ),
     )
 
 
@@ -176,7 +194,8 @@ def train_nas_candidate(config: dict[str, Any]) -> None:
         num_classes=model_config.num_classes,
     ).to(device)
     learning_rate = float(config["training"]["learning_rate"])
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    weight_decay = float(config["training"]["weight_decay"])
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     if optimizer.param_groups[0]["lr"] != learning_rate:
         raise RuntimeError("optimizer learning rate was not applied")
     criterion = nn.CrossEntropyLoss()
@@ -201,6 +220,9 @@ def train_nas_candidate(config: dict[str, Any]) -> None:
         if checkpoint_config != config:
             raise ValueError("checkpoint configuration does not match the active trial")
 
+    trial_start = time.perf_counter()
+    started_at = datetime.now(UTC).isoformat()
+    parameter_count = sum(parameter.numel() for parameter in model.parameters())
     for epoch in range(start_epoch, int(config["training"]["max_epochs"])):
         training_loss = train_one_epoch(model, loaders.train, optimizer, criterion, device)
         validation_loss, validation_accuracy = evaluate(
@@ -211,6 +233,10 @@ def train_nas_candidate(config: dict[str, Any]) -> None:
             "train_loss": training_loss,
             "validation_loss": validation_loss,
             "validation_accuracy": validation_accuracy,
+            "parameter_count": parameter_count,
+            "trial_started_at_utc": started_at,
+            "wall_clock_time_utc": datetime.now(UTC).isoformat(),
+            "elapsed_trial_seconds": time.perf_counter() - trial_start,
         }
         with tempfile.TemporaryDirectory() as checkpoint_directory:
             save_training_state(

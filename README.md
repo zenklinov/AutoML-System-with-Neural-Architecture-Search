@@ -6,7 +6,8 @@ Optuna, and ASHA for local parallel trial orchestration and early stopping.
 
 The project is not a production platform, a demonstrated multi-node system, or
 a weight-sharing NAS implementation. No benchmark or model-quality claim is
-included yet.
+included yet. The approved, still-unrun contract is documented in
+`docs/experiment_protocol.md`.
 
 ## Supported environment
 
@@ -56,6 +57,9 @@ src/automl_nas/
 ├── training.py     training, evaluation, checkpoint, and RNG state
 ├── search.py       Optuna/ASHA/Ray orchestration
 ├── artifacts.py    provenance manifest and canonical result schema
+├── protocol.py     fixed baseline and architecture identity
+├── workflows.py    calibration, confirmation, and final training
+├── locked_test.py  isolated final test evaluator
 └── cli.py          installed command-line interface
 ```
 
@@ -63,8 +67,10 @@ src/automl_nas/
 
 - `configs/smoke.yaml`: two-trial CPU pipeline check using deterministic
   synthetic data. Its accuracy is not experimental evidence.
-- `configs/cifar10.yaml`: intended CIFAR-10 search structure with a provisional
-  local budget. Phase 3 will define the actual experiment protocol.
+- `configs/cifar10.yaml`: approved protocol with a provisional, explicitly
+  unlocked final budget.
+- `configs/asha_calibration_panel.yaml`: fixed architecture panel for
+  full-curve ASHA calibration.
 
 Configurations reject unknown fields and unsupported architecture choices.
 The YAML file is authoritative; the CLI selects a config but does not silently
@@ -91,8 +97,8 @@ automl-nas search --config configs/cifar10.yaml
 ```
 
 The official CIFAR-10 test partition is not loaded during architecture search.
-Candidates are compared using a deterministic split derived from the training
-partition only.
+Candidates use the fixed stratified 45,000/5,000 training-only split. See the
+protocol document for stage commands and leakage controls.
 
 ## Generated outputs
 

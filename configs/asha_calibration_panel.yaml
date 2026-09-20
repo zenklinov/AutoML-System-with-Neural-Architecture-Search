@@ -1,0 +1,32 @@
+# Fixed, deliberately diverse architecture panel. This file is data, not search code.
+architectures:
+  - num_blocks: 2
+    blocks:
+      - {kernel_size: 3, out_channels: 16, activation: relu, residual: false}
+      - {kernel_size: 3, out_channels: 16, activation: relu, residual: false}
+  - num_blocks: 2
+    blocks:
+      - {kernel_size: 5, out_channels: 64, activation: silu, residual: true}
+      - {kernel_size: 5, out_channels: 64, activation: silu, residual: true}
+  - num_blocks: 3
+    blocks:
+      - {kernel_size: 3, out_channels: 32, activation: relu, residual: true}
+      - {kernel_size: 3, out_channels: 64, activation: relu, residual: true}
+      - {kernel_size: 3, out_channels: 64, activation: relu, residual: true}
+  - num_blocks: 3
+    blocks:
+      - {kernel_size: 5, out_channels: 16, activation: silu, residual: false}
+      - {kernel_size: 3, out_channels: 32, activation: relu, residual: true}
+      - {kernel_size: 5, out_channels: 64, activation: silu, residual: false}
+  - num_blocks: 4
+    blocks:
+      - {kernel_size: 3, out_channels: 16, activation: relu, residual: true}
+      - {kernel_size: 3, out_channels: 32, activation: relu, residual: true}
+      - {kernel_size: 3, out_channels: 64, activation: relu, residual: true}
+      - {kernel_size: 3, out_channels: 64, activation: relu, residual: true}
+  - num_blocks: 4
+    blocks:
+      - {kernel_size: 5, out_channels: 64, activation: silu, residual: false}
+      - {kernel_size: 5, out_channels: 64, activation: silu, residual: true}
+      - {kernel_size: 5, out_channels: 64, activation: relu, residual: false}
+      - {kernel_size: 5, out_channels: 64, activation: silu, residual: true}
