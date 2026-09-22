@@ -214,6 +214,46 @@ def test_provisional_protocol_templates_validate(name: str) -> None:
     assert config.search.max_concurrent_trials == 1
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "final_random_search.yaml",
+        "final_tpe_search.yaml",
+        "final_confirmation.yaml",
+        "final_training.yaml",
+        "final_locked_test.yaml",
+    ],
+)
+def test_frozen_final_protocol_templates_validate(name: str) -> None:
+    from automl_nas.config import load_config
+
+    config = load_config(REPOSITORY_ROOT / "configs" / name)
+    assert config.protocol.final_budget_locked is True
+    assert config.protocol.candidate_search_seeds == (2026, 2027, 2028)
+    assert config.protocol.confirmation_seeds == (3101, 3102, 3103)
+    assert config.protocol.final_training_seeds == (4101, 4102, 4103, 4104, 4105)
+    assert config.search.num_trials == 20
+    assert config.search.max_t == config.training.max_epochs == 20
+    assert config.search.grace_period_epochs == 4
+    assert config.search.reduction_factor == 2
+    assert config.search.max_concurrent_trials == 1
+    assert config.resources.gpu_per_trial == 1
+
+
+def test_frozen_search_configs_differ_only_by_strategy_and_run_label() -> None:
+    from automl_nas.config import load_config
+
+    random_config = load_config(REPOSITORY_ROOT / "configs" / "final_random_search.yaml")
+    tpe_config = load_config(REPOSITORY_ROOT / "configs" / "final_tpe_search.yaml")
+    random_document = random_config.to_dict()
+    tpe_document = tpe_config.to_dict()
+    random_document["search"]["strategy"] = "<strategy>"
+    tpe_document["search"]["strategy"] = "<strategy>"
+    random_document["output"]["run_label"] = "<run-label>"
+    tpe_document["output"]["run_label"] = "<run-label>"
+    assert random_document == tpe_document
+
+
 def test_only_locked_module_requests_official_test_partition() -> None:
     import automl_nas.data as data_module
     import automl_nas.locked_test as locked_module

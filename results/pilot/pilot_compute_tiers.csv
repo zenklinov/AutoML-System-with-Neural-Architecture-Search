@@ -1,0 +1,4 @@
+tier,trials_per_strategy_per_seed,search_seed_count,max_epochs,total_search_trials,projected_search_gpu_hours
+Minimum Credible,16,2,20,64,6.893687445366823
+Recommended,20,3,20,120,12.925663960062794
+Extended,30,3,20,180,19.38849594009419

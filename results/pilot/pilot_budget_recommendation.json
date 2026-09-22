@@ -1,0 +1,66 @@
+{
+  "disclaimer": "PILOT / DIAGNOSTIC — NOT FINAL BENCHMARK",
+  "decision_date": "2026-09-22",
+  "pilot_git_sha": "dfe1b0f54f3e43eab6c24641be67df0f4fbdba35",
+  "recommended_tier": "Recommended",
+  "frozen_search": {
+    "trials_per_strategy_per_seed": 20,
+    "search_seeds": [2026, 2027, 2028],
+    "training_seed_within_search": 4242,
+    "max_epochs": 20,
+    "asha_grace_period_epochs": 4,
+    "asha_reduction_factor": 2,
+    "max_concurrent_trials": 1,
+    "gpu_per_trial": 1
+  },
+  "frozen_downstream_seeds": {
+    "confirmation": [3101, 3102, 3103],
+    "final_training": [4101, 4102, 4103, 4104, 4105]
+  },
+  "rationale": [
+    "Calibration ranks were already strongly informative at epoch 4 and retained the final top half.",
+    "Pilot pruning produced no failures and did not show systematic elimination of larger candidates at epoch 4.",
+    "Several completed pilot candidates still improved between epochs 8 and 12, including the strongest adaptive TPE candidate, so 12 epochs is a tight final ceiling.",
+    "Twenty trials give TPE ten adaptive proposals per seed while three paired search seeds preserve the approved seed-variability design.",
+    "The projected search cost is feasible on the measured single RTX 4060 Laptop GPU without increasing concurrency."
+  ],
+  "compute_projection_method": {
+    "measured_combined_pilot_gpu_hours": 2.068106233610047,
+    "measured_combined_pilot_trials": 32,
+    "measured_pilot_max_epochs": 12,
+    "formula": "pilot GPU-hours × (tier total trials / 32) × (tier max epochs / 12)",
+    "caveat": "Planning estimate only. ASHA rung outcomes, architecture mix, thermal state, and final-stage data loading make actual runtime nonlinear."
+  },
+  "tiers": [
+    {
+      "name": "Minimum Credible",
+      "trials_per_strategy_per_seed": 16,
+      "search_seed_count": 2,
+      "max_epochs": 20,
+      "total_search_trials": 64,
+      "projected_search_gpu_hours": 6.893687445366823
+    },
+    {
+      "name": "Recommended",
+      "trials_per_strategy_per_seed": 20,
+      "search_seed_count": 3,
+      "max_epochs": 20,
+      "total_search_trials": 120,
+      "projected_search_gpu_hours": 12.925663960062794
+    },
+    {
+      "name": "Extended",
+      "trials_per_strategy_per_seed": 30,
+      "search_seed_count": 3,
+      "max_epochs": 20,
+      "total_search_trials": 180,
+      "projected_search_gpu_hours": 19.38849594009419
+    }
+  ],
+  "not_authorized_or_executed": [
+    "final Random/TPE benchmark",
+    "confirmation",
+    "final retraining",
+    "official CIFAR-10 test evaluation"
+  ]
+}

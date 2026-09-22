@@ -130,8 +130,13 @@ contains only training and validation information; it intentionally has no
 official test metric.
 
 Generated `artifacts/`, CIFAR data, and checkpoints are ignored by Git. The
-`results/` directory is reserved for small curated outputs from a future,
-approved experiment protocol.
+`results/` directory contains only small curated outputs from approved protocol work.
+
+Scheduler calibration and a one-seed Random/TPE comparative pilot have completed.
+Their checked-in artifacts are explicitly diagnostic, not final benchmark or CV
+evidence. The later final benchmark protocol is frozen in `configs/final_*.yaml`, but
+the final searches, confirmation, retraining, and official test evaluation have not
+been run.
 
 ## Tests and lint
 
