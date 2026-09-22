@@ -1,0 +1,56 @@
+{
+  "execution_common": {
+    "cpu_per_trial": 1,
+    "deterministic_algorithms_requested": true,
+    "gpu_per_trial": 1,
+    "grace_period_epochs": 4,
+    "max_concurrent_trials": 1,
+    "max_t": 12,
+    "objective": "validation_accuracy",
+    "reduction_factor": 2,
+    "time_attr": "training_iteration",
+    "tpe": {
+      "constant_liar": false,
+      "multivariate": false,
+      "n_ei_candidates": 24,
+      "n_startup_trials": 10
+    }
+  },
+  "git": {
+    "available": true,
+    "commit_sha": "dfe1b0f54f3e43eab6c24641be67df0f4fbdba35",
+    "dirty": false
+  },
+  "paired_config_match": true,
+  "random": {
+    "finished_at_utc": "2026-09-22T08:10:56.442584+00:00",
+    "run_id": "provisional-random-pilot-20260922T065949Z-6ecf900d",
+    "started_at_utc": "2026-09-22T06:59:49.221077+00:00",
+    "status": "COMPLETED"
+  },
+  "software": {
+    "optuna": "4.0.0",
+    "python": "3.11.9",
+    "ray": "2.40.0",
+    "torch": "2.4.0+cu124",
+    "torchvision": "0.19.0+cu124"
+  },
+  "system": {
+    "cpu": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cuda_available": true,
+    "cuda_version": "12.4",
+    "gpu_models": [
+      "NVIDIA GeForce RTX 4060 Laptop GPU"
+    ],
+    "logical_cpu_count": 28,
+    "machine": "AMD64",
+    "os": "Windows",
+    "os_release": "10"
+  },
+  "tpe": {
+    "finished_at_utc": "2026-09-22T09:08:54.913369+00:00",
+    "run_id": "provisional-tpe-pilot-20260922T081203Z-c648b8d9",
+    "started_at_utc": "2026-09-22T08:12:03.587848+00:00",
+    "status": "COMPLETED"
+  }
+}

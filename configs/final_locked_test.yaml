@@ -1,4 +1,4 @@
-# PROVISIONAL fixed-panel calibration template. The calibrate-asha command ignores search sampling.
+# Frozen locked-test stage. Still requires --acknowledge-locked-test and trained checkpoints.
 seed: 4242
 data:
   dataset: cifar10
@@ -31,17 +31,17 @@ training:
   weight_decay: 0.0001
   lr_scheduler: none
   evaluation_interval_epochs: 1
-  max_epochs: 12
+  max_epochs: 20
   deterministic_algorithms: true
 search:
   strategy: random
   seed: 2026
-  num_trials: 6
+  num_trials: 20
   metric: validation_accuracy
   mode: max
   time_attr: training_iteration
-  max_t: 12
-  grace_period_epochs: 12
+  max_t: 20
+  grace_period_epochs: 4
   reduction_factor: 2
   max_concurrent_trials: 1
   tpe: {n_startup_trials: 10, n_ei_candidates: 24, multivariate: false, constant_liar: false}
@@ -51,5 +51,5 @@ protocol:
   search_training_seed: 4242
   confirmation_seeds: [3101, 3102, 3103]
   final_training_seeds: [4101, 4102, 4103, 4104, 4105]
-  final_budget_locked: false
-output: {root_directory: ../artifacts, run_label: provisional-asha-calibration}
+  final_budget_locked: true
+output: {root_directory: ../artifacts, run_label: final-locked-test}

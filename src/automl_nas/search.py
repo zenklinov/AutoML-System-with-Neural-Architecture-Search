@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import sys
 import time
 from dataclasses import dataclass
@@ -21,6 +22,7 @@ from automl_nas.artifacts import (
     build_result_document,
     create_run_id,
     finalize_manifest,
+    utc_timestamp,
     write_json,
 )
 from automl_nas.config import ExperimentConfig
@@ -124,14 +126,33 @@ def trial_resources(config: ExperimentConfig) -> dict[str, int]:
 def run_search(
     config: ExperimentConfig,
     command: list[str] | None = None,
+    resume_run_directory: Path | None = None,
 ) -> RunOutcome:
     """Run a local search and create manifest plus canonical trial summaries."""
-    run_id = create_run_id(config.output.run_label)
-    run_directory = config.output.root_directory / "runs" / run_id
+    if resume_run_directory is None:
+        run_id = create_run_id(config.output.run_label)
+        run_directory = config.output.root_directory / "runs" / run_id
+    else:
+        run_directory = resume_run_directory.resolve()
+        run_id = run_directory.name
     manifest_path = run_directory / "manifest.json"
     result_path = run_directory / "summaries" / "trials.json"
     raw_ray_path = run_directory / "ray"
-    manifest = build_manifest(config, run_id, command=command or sys.argv)
+    if resume_run_directory is None:
+        manifest = build_manifest(config, run_id, command=command or sys.argv)
+    else:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        current = build_manifest(config, run_id, command=command or sys.argv)
+        if manifest["config"] != config.to_dict():
+            raise ValueError("resume config does not match the interrupted run")
+        if current["git"]["dirty"] or current["git"]["commit_sha"] != manifest["git"]["commit_sha"]:
+            raise ValueError("resume requires the original clean Git commit")
+        manifest.setdefault("resume_events", []).append(
+            {"resumed_at_utc": utc_timestamp(), "command": command or sys.argv}
+        )
+        manifest["status"] = "RUNNING"
+        manifest["finished_at_utc"] = None
+        manifest["error"] = None
     write_json(manifest_path, manifest)
     search_start = time.perf_counter()
 
@@ -153,21 +174,29 @@ def run_search(
             train_nas_candidate,
             resources=trial_resources(config),
         )
-        tuner = tune.Tuner(
-            trainable,
-            tune_config=tune.TuneConfig(
-                search_alg=create_search_algorithm(config),
-                scheduler=build_scheduler(config),
-                num_samples=config.search.num_trials,
-                max_concurrent_trials=config.search.max_concurrent_trials,
-                trial_name_creator=short_trial_name,
-                trial_dirname_creator=short_trial_name,
-            ),
-            run_config=train.RunConfig(
-                name="tune",
-                storage_path=str(raw_ray_path),
-            ),
-        )
+        if resume_run_directory is None:
+            tuner = tune.Tuner(
+                trainable,
+                tune_config=tune.TuneConfig(
+                    search_alg=create_search_algorithm(config),
+                    scheduler=build_scheduler(config),
+                    num_samples=config.search.num_trials,
+                    max_concurrent_trials=config.search.max_concurrent_trials,
+                    trial_name_creator=short_trial_name,
+                    trial_dirname_creator=short_trial_name,
+                ),
+                run_config=train.RunConfig(
+                    name="tune",
+                    storage_path=str(raw_ray_path),
+                ),
+            )
+        else:
+            tuner = tune.Tuner.restore(
+                str(raw_ray_path / "tune"),
+                trainable=trainable,
+                resume_unfinished=True,
+                resume_errored=True,
+            )
         results = tuner.fit()
         result_document = build_result_document(
             results,

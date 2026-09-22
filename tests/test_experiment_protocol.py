@@ -16,7 +16,12 @@ from automl_nas.locked_test import run_locked_test_evaluation
 from automl_nas.models import CandidateCNN
 from automl_nas.protocol import REFERENCE_BASELINE_PARAMETER_COUNT, trainable_parameter_count
 from automl_nas.search import create_search_algorithm
-from automl_nas.workflows import load_calibration_panel, run_confirmation, run_final_training
+from automl_nas.workflows import (
+    load_calibration_panel,
+    run_calibration,
+    run_confirmation,
+    run_final_training,
+)
 
 
 def test_frozen_transforms_and_statistics(smoke_config) -> None:
@@ -64,6 +69,37 @@ def test_calibration_panel_architectures_construct() -> None:
     assert {item["num_blocks"] for item in panel} == {2, 3, 4}
     for architecture in panel:
         CandidateCNN(architecture)
+
+
+def test_calibration_persists_completed_records_before_failure(
+    monkeypatch, smoke_config, tmp_path: Path
+) -> None:
+    panel = tmp_path / "panel.yaml"
+    panel.write_text(
+        yaml.safe_dump({"architectures": [make_architecture(2), make_architecture(3)]}),
+        encoding="utf-8",
+    )
+    calls = 0
+
+    def train(config, architecture, seed):
+        nonlocal calls
+        del config, seed
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("simulated interruption")
+        return {"architecture": architecture, "seed": 4242, "history": []}
+
+    monkeypatch.setattr("automl_nas.workflows.prepare_search_dataset", lambda config: None)
+    monkeypatch.setattr("automl_nas.workflows._train_validation", train)
+    with pytest.raises(RuntimeError, match="simulated interruption"):
+        run_calibration(smoke_config, panel)
+
+    summary = next(smoke_config.output.root_directory.glob("runs/*/summaries/calibration.json"))
+    document = json.loads(summary.read_text(encoding="utf-8"))
+    manifest = json.loads((summary.parents[1] / "manifest.json").read_text(encoding="utf-8"))
+    assert document["status"] == "FAILED"
+    assert len(document["records"]) == 1
+    assert manifest["status"] == "FAILED"
 
 
 def test_confirmation_uses_only_completed_trials_and_confirmation_seeds(
@@ -176,6 +212,46 @@ def test_provisional_protocol_templates_validate(name: str) -> None:
     config = load_config(REPOSITORY_ROOT / "configs" / name)
     assert config.protocol.final_budget_locked is False
     assert config.search.max_concurrent_trials == 1
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "final_random_search.yaml",
+        "final_tpe_search.yaml",
+        "final_confirmation.yaml",
+        "final_training.yaml",
+        "final_locked_test.yaml",
+    ],
+)
+def test_frozen_final_protocol_templates_validate(name: str) -> None:
+    from automl_nas.config import load_config
+
+    config = load_config(REPOSITORY_ROOT / "configs" / name)
+    assert config.protocol.final_budget_locked is True
+    assert config.protocol.candidate_search_seeds == (2026, 2027, 2028)
+    assert config.protocol.confirmation_seeds == (3101, 3102, 3103)
+    assert config.protocol.final_training_seeds == (4101, 4102, 4103, 4104, 4105)
+    assert config.search.num_trials == 20
+    assert config.search.max_t == config.training.max_epochs == 20
+    assert config.search.grace_period_epochs == 4
+    assert config.search.reduction_factor == 2
+    assert config.search.max_concurrent_trials == 1
+    assert config.resources.gpu_per_trial == 1
+
+
+def test_frozen_search_configs_differ_only_by_strategy_and_run_label() -> None:
+    from automl_nas.config import load_config
+
+    random_config = load_config(REPOSITORY_ROOT / "configs" / "final_random_search.yaml")
+    tpe_config = load_config(REPOSITORY_ROOT / "configs" / "final_tpe_search.yaml")
+    random_document = random_config.to_dict()
+    tpe_document = tpe_config.to_dict()
+    random_document["search"]["strategy"] = "<strategy>"
+    tpe_document["search"]["strategy"] = "<strategy>"
+    random_document["output"]["run_label"] = "<run-label>"
+    tpe_document["output"]["run_label"] = "<run-label>"
+    assert random_document == tpe_document
 
 
 def test_only_locked_module_requests_official_test_partition() -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import tempfile
 from pathlib import Path
 
@@ -12,9 +13,18 @@ from automl_nas.models import CandidateCNN
 from automl_nas.training import (
     restore_training_state,
     save_training_state,
+    set_global_seed,
     train_nas_candidate,
     train_one_epoch,
 )
+
+
+def test_deterministic_seed_configures_cublas_workspace(monkeypatch) -> None:
+    monkeypatch.delenv("CUBLAS_WORKSPACE_CONFIG", raising=False)
+
+    set_global_seed(123, deterministic_algorithms=True)
+
+    assert os.environ["CUBLAS_WORKSPACE_CONFIG"] == ":4096:8"
 
 
 def _trial_config(config) -> dict:

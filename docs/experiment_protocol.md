@@ -1,6 +1,9 @@
 # Approved CIFAR-10 Experiment Protocol
 
-This is the executable experiment contract. Implementing and testing it does **not** authorize a pilot, candidate search, confirmation run, final retraining, or official-test evaluation. The final budget remains deliberately unlocked (`protocol.final_budget_locked: false`).
+This is the executable experiment contract. The 2026-09-22 pilot amendment freezes a
+recommended final budget in dedicated `configs/final_*.yaml` files. That freeze is not
+authorization to execute the final search, confirmation, retraining, or official-test
+evaluation. The older general and pilot templates remain deliberately unlocked.
 
 ## Question and comparison
 
@@ -75,7 +78,10 @@ The descriptive analysis will show raw search-seed results, mean, standard devia
 
 ## Pilot and final-budget decision
 
-The calibration pilot examines complete curves and early-versus-late ranks. The comparative pilot measures runtime, learning behavior, failure modes, and the amount of genuinely adaptive TPE behavior. Because TPE has 10 startup trials, a tiny trial budget provides little adaptive evidence. A 20-trial-per-seed lower-bound may be considered if compute permits, but neither 20×3 nor any “recommended/extended” tier is locked. Final `max_t`, grace period, trial count, and which candidate search seeds to run are chosen only in a documented amendment after pilot evidence. Final budget status is **DO NOT LOCK YET**.
+The calibration pilot examines complete curves and early-versus-late ranks. The comparative
+pilot measures runtime, learning behavior, failure modes, and the amount of genuinely adaptive
+TPE behavior. The 2026-09-22 amendment below records the resulting frozen recommendation.
+Pilot measurements remain diagnostic and are not performance claims.
 
 ## Failure and invalidation rules
 
@@ -101,3 +107,86 @@ automl-nas evaluate-locked-test --config <locked-config.yaml> --final-models <fi
 ```
 
 The manifest records software/hardware. Deterministic algorithms are requested, but bit-for-bit equivalence across CUDA devices, drivers, or libraries is not claimed.
+
+## Resource-policy amendment — 2026-09-20
+
+The initial one-CPU calibration was stopped as `ABORTED — ProtocolFeasibilityStop` after
+the smallest 8,074-parameter panel architecture required 2,622.47 seconds for 12 epochs.
+That incomplete CPU run is feasibility evidence only and must not be combined with GPU
+calibration or search results.
+
+Calibration, Random pilot, and TPE pilot now use one NVIDIA GPU per trial, one trial at a
+time, and the separately pinned `requirements.cuda.lock` environment. Their training
+recipe, split, transforms, architecture space, seeds, and strategy fairness rules are
+unchanged. CPU installation, smoke tests, and GitHub Actions remain supported through
+`requirements.lock`; CUDA is not a general project dependency. Fresh GPU calibration is
+required before selecting a pilot grace period. The final budget remains unlocked.
+
+### GPU calibration decision
+
+Run `asha-calibration-20260920T111018Z-fece8078` completed all six fixed architectures
+from Git commit `dcbd734317e4c52021879038e27548bb50690ebd` on the RTX 4060 Laptop GPU.
+All final top-three architectures were already in the top half at every epoch; epoch-4
+Spearman rank correlation with epoch 12 was 0.943. The panel showed no late-learning
+architecture at risk of missing the final top half. The comparative pilot therefore keeps
+`grace_period_epochs: 4`, `reduction_factor: 2`, `max_t: 12`, and concurrency one. Its
+paired diagnostic budget is 16 trials per strategy at search seed 2026, providing six
+post-startup TPE suggestions. These are pilot settings, not final-budget decisions.
+
+## Final-budget amendment — 2026-09-22
+
+The paired GPU pilot completed from clean Git commit
+`dfe1b0f54f3e43eab6c24641be67df0f4fbdba35` on the same RTX 4060 Laptop GPU,
+with one GPU per trial and concurrency one. Random run
+`provisional-random-pilot-20260922T065949Z-6ecf900d` completed 7 and pruned 9 of
+16 trials, consumed 132 epochs, had no failures, and recorded 1.151 GPU-hours.
+TPE run `provisional-tpe-pilot-20260922T081203Z-c648b8d9` completed 9 and
+pruned 7 of 16 trials, consumed 144 epochs, had no failures, and recorded 0.917
+GPU-hours. The two resolved configs matched except for strategy and run label.
+
+TPE trials 1–10 were startup proposals and exactly matched the first ten seeded
+Random architectures and terminal scores. Trials 11–16 were adaptive proposals:
+four completed, two were pruned at epoch 4, and none failed. Their median parameter
+count was 38,986 versus 78,138 for startup proposals. This is evidence that adaptive
+sampling occurred, not evidence that TPE is superior.
+
+The strongest completed pilot trajectories had not uniformly plateaued by epoch 12.
+Across completed trials, the median epoch-8-to-12 gain was 0.0074 for Random and
+0.0168 for TPE; the strongest adaptive TPE candidate gained 0.0332 over those four
+epochs. Validation noise was also visible, so these deltas are descriptive. The final
+search ceiling is therefore 20 epochs: long enough to observe later separation without
+jumping to an unsupported 30-epoch budget.
+
+Grace period remains 4 with reduction factor 2. Calibration showed epoch-4 Spearman
+rank correlation 0.943 with epoch 12 and retained all final top-half architectures in
+the current top half. Pilot pruning occurred only at epochs 4 and 8, with no failures,
+and did not show an obvious systematic penalty against larger/deeper candidates.
+
+### Compute-tier comparison
+
+| Tier | Trials / strategy / seed | Search seeds | Total search trials | Max epochs | Projected search GPU-hours |
+|---|---:|---:|---:|---:|---:|
+| Minimum Credible | 16 | 2 | 64 | 20 | 6.89 |
+| Recommended | 20 | 3 | 120 | 20 | 12.93 |
+| Extended | 30 | 3 | 180 | 20 | 19.39 |
+
+The projection scales the measured combined 2.068 pilot GPU-hours by total trial count
+and the 20/12 epoch ratio. It is a planning estimate, not a runtime guarantee: ASHA
+rungs, architecture mix, and laptop thermal state make actual cost nonlinear.
+
+The frozen final tier is **Recommended**:
+
+- Random and TPE each receive 20 trials for each of search seeds 2026, 2027, and 2028.
+- Both use `max_t: 20`, `max_epochs: 20`, grace period 4, reduction factor 2,
+  one GPU per trial, and concurrency one.
+- TPE keeps 10 startup trials, giving 10 adaptive proposals per search seed.
+- Confirmation keeps seeds 3101–3103.
+- Final training keeps seeds 4101–4105 for both strategy winners and the fixed baseline.
+- The official test remains inaccessible until trained final checkpoints exist and a
+  separate `--acknowledge-locked-test` invocation is explicitly authorized.
+
+The frozen stage configs are `final_random_search.yaml`, `final_tpe_search.yaml`,
+`final_confirmation.yaml`, `final_training.yaml`, and `final_locked_test.yaml`. They
+must not be executed as part of this pilot task. Evidence is in
+`results/pilot/pilot_analysis.json`, `pilot_provenance.json`, and
+`pilot_budget_recommendation.json`.

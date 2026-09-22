@@ -1,4 +1,4 @@
-# PROVISIONAL comparative pilot template. Do not treat this as the final budget.
+# Calibration-selected comparative pilot. Diagnostic only; not the final budget.
 seed: 4242
 data:
   dataset: cifar10
@@ -36,7 +36,7 @@ training:
 search:
   strategy: bayesian
   seed: 2026
-  num_trials: 12
+  num_trials: 16
   metric: validation_accuracy
   mode: max
   time_attr: training_iteration
@@ -45,7 +45,7 @@ search:
   reduction_factor: 2
   max_concurrent_trials: 1
   tpe: {n_startup_trials: 10, n_ei_candidates: 24, multivariate: false, constant_liar: false}
-resources: {cpu_per_trial: 1, gpu_per_trial: 0}
+resources: {cpu_per_trial: 1, gpu_per_trial: 1}
 protocol:
   candidate_search_seeds: [2026, 2027, 2028]
   search_training_seed: 4242

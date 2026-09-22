@@ -1,0 +1,392 @@
+{
+  "architecture_count": 6,
+  "architectures": [
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture_id": "a83ea7b58d95ed4f",
+      "blocks": 2,
+      "duration_seconds": 597.9248253000005,
+      "epoch_2_rank": 6.0,
+      "epoch_4_rank": 6.0,
+      "epoch_6_rank": 6.0,
+      "final_rank": 6.0,
+      "final_validation_accuracy": 0.5838,
+      "has_residual": false,
+      "has_silu": false,
+      "parameter_count": 8074
+    },
+    {
+      "all_residual": true,
+      "all_silu": true,
+      "architecture_id": "705b59bb327205f7",
+      "blocks": 2,
+      "duration_seconds": 613.2963331999999,
+      "epoch_2_rank": 5.0,
+      "epoch_4_rank": 5.0,
+      "epoch_6_rank": 5.0,
+      "final_rank": 5.0,
+      "final_validation_accuracy": 0.6928,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 157482
+    },
+    {
+      "all_residual": true,
+      "all_silu": false,
+      "architecture_id": "a73c7cf20a8bf855",
+      "blocks": 3,
+      "duration_seconds": 613.4109076999994,
+      "epoch_2_rank": 4.0,
+      "epoch_4_rank": 4.0,
+      "epoch_6_rank": 4.0,
+      "final_rank": 4.0,
+      "final_validation_accuracy": 0.714,
+      "has_residual": true,
+      "has_silu": false,
+      "parameter_count": 68458
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture_id": "0bdd44692f5e42bb",
+      "blocks": 3,
+      "duration_seconds": 641.3502751999986,
+      "epoch_2_rank": 3.0,
+      "epoch_4_rank": 2.0,
+      "epoch_6_rank": 3.0,
+      "final_rank": 3.0,
+      "final_validation_accuracy": 0.758,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 70922
+    },
+    {
+      "all_residual": true,
+      "all_silu": false,
+      "architecture_id": "52d58d4515c54422",
+      "blocks": 4,
+      "duration_seconds": 546.2262173000017,
+      "epoch_2_rank": 2.0,
+      "epoch_4_rank": 3.0,
+      "epoch_6_rank": 2.0,
+      "final_rank": 2.0,
+      "final_validation_accuracy": 0.794,
+      "has_residual": true,
+      "has_silu": false,
+      "parameter_count": 69514
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture_id": "c88579b3ad9a3218",
+      "blocks": 4,
+      "duration_seconds": 1155.3324505000019,
+      "epoch_2_rank": 1.0,
+      "epoch_4_rank": 1.0,
+      "epoch_6_rank": 1.0,
+      "final_rank": 1.0,
+      "final_validation_accuracy": 0.8294,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 360490
+    }
+  ],
+  "disclaimer": "PILOT / DIAGNOSTIC \u2014 NOT FINAL BENCHMARK",
+  "epoch_count": 12,
+  "epoch_rank_stability": [
+    {
+      "epoch": 1,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    },
+    {
+      "epoch": 2,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    },
+    {
+      "epoch": 3,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    },
+    {
+      "epoch": 4,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 0.9428571428571428
+    },
+    {
+      "epoch": 5,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 0.9428571428571428
+    },
+    {
+      "epoch": 6,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    },
+    {
+      "epoch": 7,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    },
+    {
+      "epoch": 8,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    },
+    {
+      "epoch": 9,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    },
+    {
+      "epoch": 10,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 0.9428571428571428
+    },
+    {
+      "epoch": 11,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 0.9428571428571428
+    },
+    {
+      "epoch": 12,
+      "final_top_half_retained_in_current_top_half": 3,
+      "spearman_rank_correlation_with_final": 1.0
+    }
+  ],
+  "hypothetical_successive_halving": [
+    {
+      "grace_period": 2,
+      "method": "synchronous successive-halving approximation; actual ASHA may differ",
+      "rounds": [
+        {
+          "active_architecture_ids": [
+            "a83ea7b58d95ed4f",
+            "705b59bb327205f7",
+            "a73c7cf20a8bf855",
+            "0bdd44692f5e42bb",
+            "52d58d4515c54422",
+            "c88579b3ad9a3218"
+          ],
+          "at_risk_architecture_ids": [
+            "a73c7cf20a8bf855",
+            "705b59bb327205f7",
+            "a83ea7b58d95ed4f"
+          ],
+          "epoch": 2,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422",
+            "0bdd44692f5e42bb"
+          ]
+        },
+        {
+          "active_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422",
+            "0bdd44692f5e42bb"
+          ],
+          "at_risk_architecture_ids": [
+            "52d58d4515c54422"
+          ],
+          "epoch": 4,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "0bdd44692f5e42bb"
+          ]
+        },
+        {
+          "active_architecture_ids": [
+            "c88579b3ad9a3218",
+            "0bdd44692f5e42bb"
+          ],
+          "at_risk_architecture_ids": [
+            "0bdd44692f5e42bb"
+          ],
+          "epoch": 8,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218"
+          ]
+        }
+      ],
+      "surviving_architecture_ids": [
+        "c88579b3ad9a3218"
+      ]
+    },
+    {
+      "grace_period": 3,
+      "method": "synchronous successive-halving approximation; actual ASHA may differ",
+      "rounds": [
+        {
+          "active_architecture_ids": [
+            "a83ea7b58d95ed4f",
+            "705b59bb327205f7",
+            "a73c7cf20a8bf855",
+            "0bdd44692f5e42bb",
+            "52d58d4515c54422",
+            "c88579b3ad9a3218"
+          ],
+          "at_risk_architecture_ids": [
+            "a73c7cf20a8bf855",
+            "705b59bb327205f7",
+            "a83ea7b58d95ed4f"
+          ],
+          "epoch": 3,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422",
+            "0bdd44692f5e42bb"
+          ]
+        },
+        {
+          "active_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422",
+            "0bdd44692f5e42bb"
+          ],
+          "at_risk_architecture_ids": [
+            "0bdd44692f5e42bb"
+          ],
+          "epoch": 6,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422"
+          ]
+        }
+      ],
+      "surviving_architecture_ids": [
+        "c88579b3ad9a3218",
+        "52d58d4515c54422"
+      ]
+    },
+    {
+      "grace_period": 4,
+      "method": "synchronous successive-halving approximation; actual ASHA may differ",
+      "rounds": [
+        {
+          "active_architecture_ids": [
+            "a83ea7b58d95ed4f",
+            "705b59bb327205f7",
+            "a73c7cf20a8bf855",
+            "0bdd44692f5e42bb",
+            "52d58d4515c54422",
+            "c88579b3ad9a3218"
+          ],
+          "at_risk_architecture_ids": [
+            "a73c7cf20a8bf855",
+            "705b59bb327205f7",
+            "a83ea7b58d95ed4f"
+          ],
+          "epoch": 4,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "0bdd44692f5e42bb",
+            "52d58d4515c54422"
+          ]
+        },
+        {
+          "active_architecture_ids": [
+            "c88579b3ad9a3218",
+            "0bdd44692f5e42bb",
+            "52d58d4515c54422"
+          ],
+          "at_risk_architecture_ids": [
+            "0bdd44692f5e42bb"
+          ],
+          "epoch": 8,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422"
+          ]
+        }
+      ],
+      "surviving_architecture_ids": [
+        "c88579b3ad9a3218",
+        "52d58d4515c54422"
+      ]
+    },
+    {
+      "grace_period": 5,
+      "method": "synchronous successive-halving approximation; actual ASHA may differ",
+      "rounds": [
+        {
+          "active_architecture_ids": [
+            "a83ea7b58d95ed4f",
+            "705b59bb327205f7",
+            "a73c7cf20a8bf855",
+            "0bdd44692f5e42bb",
+            "52d58d4515c54422",
+            "c88579b3ad9a3218"
+          ],
+          "at_risk_architecture_ids": [
+            "705b59bb327205f7",
+            "a73c7cf20a8bf855",
+            "a83ea7b58d95ed4f"
+          ],
+          "epoch": 5,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422",
+            "0bdd44692f5e42bb"
+          ]
+        },
+        {
+          "active_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422",
+            "0bdd44692f5e42bb"
+          ],
+          "at_risk_architecture_ids": [
+            "0bdd44692f5e42bb"
+          ],
+          "epoch": 10,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422"
+          ]
+        }
+      ],
+      "surviving_architecture_ids": [
+        "c88579b3ad9a3218",
+        "52d58d4515c54422"
+      ]
+    },
+    {
+      "grace_period": 6,
+      "method": "synchronous successive-halving approximation; actual ASHA may differ",
+      "rounds": [
+        {
+          "active_architecture_ids": [
+            "a83ea7b58d95ed4f",
+            "705b59bb327205f7",
+            "a73c7cf20a8bf855",
+            "0bdd44692f5e42bb",
+            "52d58d4515c54422",
+            "c88579b3ad9a3218"
+          ],
+          "at_risk_architecture_ids": [
+            "a73c7cf20a8bf855",
+            "705b59bb327205f7",
+            "a83ea7b58d95ed4f"
+          ],
+          "epoch": 6,
+          "retained_architecture_ids": [
+            "c88579b3ad9a3218",
+            "52d58d4515c54422",
+            "0bdd44692f5e42bb"
+          ]
+        }
+      ],
+      "surviving_architecture_ids": [
+        "c88579b3ad9a3218",
+        "52d58d4515c54422",
+        "0bdd44692f5e42bb"
+      ]
+    }
+  ],
+  "official_test_access": false,
+  "run_id": "asha-calibration-20260920T111018Z-fece8078",
+  "total_duration_seconds": 4167.541009200002
+}

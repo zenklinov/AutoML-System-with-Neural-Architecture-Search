@@ -65,6 +65,7 @@ def _train_validation(
                 "wall_clock_time_utc": datetime.now(UTC).isoformat(),
             }
         )
+    duration_seconds = time.perf_counter() - start
     return {
         "architecture": architecture,
         "architecture_id": architecture_id(architecture),
@@ -73,7 +74,10 @@ def _train_validation(
         "history": history,
         "best_validation_accuracy": max(row["validation_accuracy"] for row in history),
         "final_validation_accuracy": history[-1]["validation_accuracy"],
-        "duration_seconds": time.perf_counter() - start,
+        "duration_seconds": duration_seconds,
+        "cpu_hours": duration_seconds * config.resources.cpu_per_trial / 3600,
+        "gpu_hours": duration_seconds * config.resources.gpu_per_trial / 3600,
+        "device_type": device.type,
     }
 
 
@@ -224,25 +228,39 @@ def run_calibration(config: ExperimentConfig, panel_path: Path) -> Path:
         artifacts={"calibration_summary": "summaries/calibration.json"},
     )
     write_json(manifest_path, manifest)
-    prepare_search_dataset(config.data)
-    records = [
-        _train_validation(config, a, config.protocol.search_training_seed)
-        for a in load_calibration_panel(panel_path)
-    ]
     output = root / "summaries" / "calibration.json"
-    write_json(
-        output,
-        {
-            "schema_version": 1,
-            "stage": "asha_calibration",
-            "run_id": run_id,
-            "generated_at_utc": datetime.now(UTC).isoformat(),
-            "panel_source": str(panel_path),
-            "uses_asha": False,
-            "official_test_access": False,
-            "records": records,
-        },
-    )
+    records: list[dict[str, Any]] = []
+
+    def persist(status: str, error: BaseException | None = None) -> None:
+        write_json(
+            output,
+            {
+                "schema_version": 1,
+                "stage": "asha_calibration",
+                "run_id": run_id,
+                "generated_at_utc": datetime.now(UTC).isoformat(),
+                "panel_source": str(panel_path),
+                "uses_asha": False,
+                "official_test_access": False,
+                "status": status,
+                "error": ({"type": type(error).__name__, "message": str(error)} if error else None),
+                "records": records,
+            },
+        )
+
+    persist("RUNNING")
+    try:
+        prepare_search_dataset(config.data)
+        for architecture in load_calibration_panel(panel_path):
+            records.append(
+                _train_validation(config, architecture, config.protocol.search_training_seed)
+            )
+            persist("RUNNING")
+    except BaseException as error:
+        persist("FAILED", error)
+        finalize_manifest(manifest, manifest_path, "FAILED", error)
+        raise
+    persist("COMPLETED")
     finalize_manifest(manifest, manifest_path, "COMPLETED")
     return output
 

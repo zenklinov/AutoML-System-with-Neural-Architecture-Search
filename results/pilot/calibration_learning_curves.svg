@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="540">
+<rect width="100%" height="100%" fill="white"/>
+<text x="460.0" y="28" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold">Calibration validation accuracy by epoch</text>
+<text x="460.0" y="51" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#b91c1c">PILOT / DIAGNOSTIC — NOT FINAL BENCHMARK</text>
+<line x1="72" y1="462" x2="872" y2="462" stroke="#111827"/>
+<line x1="72" y1="72" x2="72" y2="462" stroke="#111827"/>
+<polyline points="72.0,462.0 144.7,418.3 217.5,377.0 290.2,364.2 362.9,389.4 435.6,357.0 508.4,316.1 581.1,340.3 653.8,312.2 726.5,314.6 799.3,296.4 872.0,299.4" fill="none" stroke="#2563eb" stroke-width="2"/>
+<text x="80" y="482" font-family="monospace" font-size="12" fill="#2563eb">a83ea7b58d95ed4f</text>
+<polyline points="72.0,395.9 144.7,328.7 217.5,362.7 290.2,347.6 362.9,354.6 435.6,248.1 508.4,255.1 581.1,274.0 653.8,271.1 726.5,246.6 799.3,343.5 872.0,198.5" fill="none" stroke="#dc2626" stroke-width="2"/>
+<text x="355" y="482" font-family="monospace" font-size="12" fill="#dc2626">705b59bb327205f7</text>
+<polyline points="72.0,387.0 144.7,325.1 217.5,289.4 290.2,266.6 362.9,386.1 435.6,213.9 508.4,247.2 581.1,205.1 653.8,227.0 726.5,285.9 799.3,270.9 872.0,178.9" fill="none" stroke="#059669" stroke-width="2"/>
+<text x="630" y="482" font-family="monospace" font-size="12" fill="#059669">a73c7cf20a8bf855</text>
+<polyline points="72.0,332.6 144.7,300.5 217.5,231.8 290.2,237.2 362.9,210.9 435.6,200.1 508.4,199.0 581.1,164.8 653.8,167.6 726.5,168.7 799.3,187.9 872.0,138.1" fill="none" stroke="#7c3aed" stroke-width="2"/>
+<text x="80" y="502" font-family="monospace" font-size="12" fill="#7c3aed">0bdd44692f5e42bb</text>
+<polyline points="72.0,300.3 144.7,260.1 217.5,187.4 290.2,255.1 362.9,189.4 435.6,132.4 508.4,144.4 581.1,145.1 653.8,120.7 726.5,120.7 799.3,130.5 872.0,104.8" fill="none" stroke="#ea580c" stroke-width="2"/>
+<text x="355" y="502" font-family="monospace" font-size="12" fill="#ea580c">52d58d4515c54422</text>
+<polyline points="72.0,297.7 144.7,240.9 217.5,172.9 290.2,152.2 362.9,167.0 435.6,95.0 508.4,100.0 581.1,95.0 653.8,103.7 726.5,75.1 799.3,125.9 872.0,72.0" fill="none" stroke="#0891b2" stroke-width="2"/>
+<text x="630" y="502" font-family="monospace" font-size="12" fill="#0891b2">c88579b3ad9a3218</text>
+</svg>

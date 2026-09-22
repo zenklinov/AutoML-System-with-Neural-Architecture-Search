@@ -1,0 +1,17 @@
+{
+  "classification": "ABORTED — ProtocolFeasibilityStop",
+  "comparable_to_gpu_pilot": false,
+  "device_policy": {
+    "cpu_per_trial": 1,
+    "gpu_per_trial": 0
+  },
+  "official_test_access": false,
+  "reason": "The smallest fixed panel architecture required 2622.47 seconds for 12 epochs, making the approved CPU-only pilot impractical.",
+  "run_id": "asha-calibration-20260920T095750Z-9f21764a",
+  "smallest_architecture": {
+    "architecture_id": "a83ea7b58d95ed4f",
+    "duration_seconds": 2622.468067,
+    "parameter_count": 8074
+  },
+  "use": "Compute-policy feasibility evidence only; excluded from GPU calibration and strategy comparisons."
+}

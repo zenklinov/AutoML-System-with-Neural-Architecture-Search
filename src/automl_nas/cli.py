@@ -19,6 +19,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     search_parser = subcommands.add_parser("search", help="run a validated search config")
     search_parser.add_argument("--config", required=True, help="path to a YAML config")
+    search_parser.add_argument(
+        "--resume-run",
+        type=Path,
+        help="resume an interrupted run directory using its persisted Ray state",
+    )
 
     matrix_parser = subcommands.add_parser(
         "search-matrix", help="run every approved candidate-search seed"
@@ -100,5 +105,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 0
-    run_search(config, command=["automl-nas", *list(argv or sys.argv[1:])])
+    run_search(
+        config,
+        command=["automl-nas", *list(argv or sys.argv[1:])],
+        resume_run_directory=arguments.resume_run,
+    )
     return 0

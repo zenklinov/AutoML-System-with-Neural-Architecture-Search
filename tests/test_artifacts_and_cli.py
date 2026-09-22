@@ -12,7 +12,7 @@ from automl_nas.artifacts import (
     build_result_document,
     validate_result_document,
 )
-from automl_nas.cli import main
+from automl_nas.cli import build_parser, main
 
 
 def test_manifest_contains_required_provenance(smoke_config) -> None:
@@ -92,3 +92,11 @@ def test_cli_invalid_config_fails_clearly(tmp_path: Path, capsys) -> None:
         main(["validate-config", "--config", str(invalid)])
     assert raised.value.code == 2
     assert "missing keys" in capsys.readouterr().err
+
+
+def test_search_cli_accepts_resume_run() -> None:
+    arguments = build_parser().parse_args(
+        ["search", "--config", "configs/smoke.yaml", "--resume-run", "artifacts/runs/example"]
+    )
+
+    assert arguments.resume_run == Path("artifacts/runs/example")
