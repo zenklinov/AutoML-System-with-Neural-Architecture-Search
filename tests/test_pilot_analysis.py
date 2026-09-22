@@ -1,13 +1,22 @@
 from __future__ import annotations
 
+import importlib.util
+import sys
+from pathlib import Path
 from typing import Any
 
-from scripts.analyze_pilot import (
-    DISCLAIMER,
-    _paired_provenance,
-    analyze_calibration,
-    analyze_search,
-)
+ANALYSIS_PATH = Path(__file__).resolve().parents[1] / "scripts" / "analyze_pilot.py"
+ANALYSIS_SPEC = importlib.util.spec_from_file_location("pilot_analysis_script", ANALYSIS_PATH)
+if ANALYSIS_SPEC is None or ANALYSIS_SPEC.loader is None:
+    raise RuntimeError(f"could not load pilot analysis script from {ANALYSIS_PATH}")
+ANALYSIS_MODULE = importlib.util.module_from_spec(ANALYSIS_SPEC)
+sys.modules[ANALYSIS_SPEC.name] = ANALYSIS_MODULE
+ANALYSIS_SPEC.loader.exec_module(ANALYSIS_MODULE)
+
+DISCLAIMER = ANALYSIS_MODULE.DISCLAIMER
+_paired_provenance = ANALYSIS_MODULE._paired_provenance
+analyze_calibration = ANALYSIS_MODULE.analyze_calibration
+analyze_search = ANALYSIS_MODULE.analyze_search
 
 
 def _record(index: int, scores: list[float]) -> dict[str, Any]:
