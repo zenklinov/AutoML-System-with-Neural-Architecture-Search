@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="500">
+<rect width="100%" height="100%" fill="white"/>
+<text x="460.0" y="28" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold">Pilot best-so-far validation accuracy vs trial</text>
+<text x="460.0" y="51" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#b91c1c">PILOT / DIAGNOSTIC — NOT FINAL BENCHMARK</text>
+<polyline points="72.0,422.0 125.3,209.8 178.7,122.3 232.0,122.3 285.3,122.3 338.7,122.3 392.0,122.3 445.3,122.3 498.7,122.3 552.0,122.3 605.3,109.2 658.7,92.7 712.0,92.7 765.3,92.7 818.7,92.7 872.0,92.7" fill="none" stroke="#2563eb" stroke-width="2"/>
+<text x="72" y="460" font-family="sans-serif" font-size="13" fill="#2563eb">random</text>
+<polyline points="72.0,422.0 125.3,209.8 178.7,122.3 232.0,122.3 285.3,122.3 338.7,122.3 392.0,122.3 445.3,122.3 498.7,122.3 552.0,122.3 605.3,122.3 658.7,122.3 712.0,117.5 765.3,79.6 818.7,79.6 872.0,72.0" fill="none" stroke="#dc2626" stroke-width="2"/>
+<text x="222" y="460" font-family="sans-serif" font-size="13" fill="#dc2626">bayesian</text>
+</svg>

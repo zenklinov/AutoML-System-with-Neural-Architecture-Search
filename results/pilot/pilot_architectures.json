@@ -1,0 +1,1399 @@
+{
+  "disclaimer": "PILOT / DIAGNOSTIC \u2014 NOT FINAL BENCHMARK",
+  "random_run_id": "provisional-random-pilot-20260922T065949Z-6ecf900d",
+  "tpe_run_id": "provisional-tpe-pilot-20260922T081203Z-c648b8d9",
+  "trials": [
+    {
+      "all_residual": false,
+      "all_silu": true,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 618.3376517295837,
+      "epochs_consumed": 12,
+      "has_residual": false,
+      "has_silu": true,
+      "parameter_count": 103850,
+      "proposal_phase": "random",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "random",
+      "train_loss": 0.8379423824098375,
+      "trial_id": "433f44ff",
+      "trial_number": 1,
+      "validation_accuracy": 0.6788,
+      "validation_loss": 0.9203465758800506
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": false
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 265.49179124832153,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 72746,
+      "proposal_phase": "random",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "random",
+      "train_loss": 0.6189489180352953,
+      "trial_id": "4afac393",
+      "trial_number": 2,
+      "validation_accuracy": 0.7404,
+      "validation_loss": 0.7763651872634888
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 254.42155385017395,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 103338,
+      "proposal_phase": "random",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "random",
+      "train_loss": 0.5385949286990696,
+      "trial_id": "3e3a160d",
+      "trial_number": 3,
+      "validation_accuracy": 0.7658,
+      "validation_loss": 0.6982595156192779
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 87.2058777809143,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 24778,
+      "proposal_phase": "random",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 1.2442589844173855,
+      "trial_id": "38939f8f",
+      "trial_number": 4,
+      "validation_accuracy": 0.5202,
+      "validation_loss": 1.3882570280075073
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 92.51988649368286,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 46538,
+      "proposal_phase": "random",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 1.0100601657973396,
+      "trial_id": "fbc1088a",
+      "trial_number": 5,
+      "validation_accuracy": 0.5108,
+      "validation_loss": 1.4487724224090577
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 172.9868197441101,
+      "epochs_consumed": 8,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 79242,
+      "proposal_phase": "random",
+      "pruning_iteration": 8,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 0.6641662583457099,
+      "trial_id": "0e0780b7",
+      "trial_number": 6,
+      "validation_accuracy": 0.7322,
+      "validation_loss": 0.7886910833358765
+    },
+    {
+      "all_residual": true,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 262.72354888916016,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 126890,
+      "proposal_phase": "random",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "random",
+      "train_loss": 0.563815951845381,
+      "trial_id": "0d66d663",
+      "trial_number": 7,
+      "validation_accuracy": 0.7398,
+      "validation_loss": 0.7919169174671173
+    },
+    {
+      "all_residual": false,
+      "all_silu": true,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 84.4027099609375,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 11082,
+      "proposal_phase": "random",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 1.2777440093994141,
+      "trial_id": "02b21540",
+      "trial_number": 8,
+      "validation_accuracy": 0.519,
+      "validation_loss": 1.3571763343811034
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": true
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 170.50245356559753,
+      "epochs_consumed": 8,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 181610,
+      "proposal_phase": "random",
+      "pruning_iteration": 8,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 0.6609636250283983,
+      "trial_id": "5da1d897",
+      "trial_number": 9,
+      "validation_accuracy": 0.7312,
+      "validation_loss": 0.787352681684494
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 428.594144821167,
+      "epochs_consumed": 12,
+      "has_residual": false,
+      "has_silu": true,
+      "parameter_count": 77034,
+      "proposal_phase": "random",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "random",
+      "train_loss": 0.6126086675643921,
+      "trial_id": "2fa5a6a9",
+      "trial_number": 10,
+      "validation_accuracy": 0.7626,
+      "validation_loss": 0.7165882121562958
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 617.9875555038452,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 65866,
+      "proposal_phase": "random",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "random",
+      "train_loss": 0.6244056500328912,
+      "trial_id": "255a324f",
+      "trial_number": 11,
+      "validation_accuracy": 0.7696,
+      "validation_loss": 0.686287863445282
+    },
+    {
+      "all_residual": true,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 627.8414664268494,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 99146,
+      "proposal_phase": "random",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "random",
+      "train_loss": 0.6031549694591098,
+      "trial_id": "0e549372",
+      "trial_number": 12,
+      "validation_accuracy": 0.7744,
+      "validation_loss": 0.653252085351944
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 141.14541959762573,
+      "epochs_consumed": 4,
+      "has_residual": false,
+      "has_silu": true,
+      "parameter_count": 12170,
+      "proposal_phase": "random",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 1.2698789023293389,
+      "trial_id": "2adc94eb",
+      "trial_number": 13,
+      "validation_accuracy": 0.5372,
+      "validation_loss": 1.2873806339263916
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 73.90115189552307,
+      "epochs_consumed": 4,
+      "has_residual": false,
+      "has_silu": true,
+      "parameter_count": 25194,
+      "proposal_phase": "random",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 1.062588837093777,
+      "trial_id": "01bea5c1",
+      "trial_number": 14,
+      "validation_accuracy": 0.6272,
+      "validation_loss": 1.0790951422214508
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 77.7399365901947,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 39594,
+      "proposal_phase": "random",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 1.2021180201954311,
+      "trial_id": "d4eb4ab4",
+      "trial_number": 15,
+      "validation_accuracy": 0.5556,
+      "validation_loss": 1.2583643314361572
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 167.49157619476318,
+      "epochs_consumed": 8,
+      "has_residual": true,
+      "has_silu": false,
+      "parameter_count": 181098,
+      "proposal_phase": "random",
+      "pruning_iteration": 8,
+      "status": "PRUNED",
+      "strategy": "random",
+      "train_loss": 0.636464154238171,
+      "trial_id": "acd13a07",
+      "trial_number": 16,
+      "validation_accuracy": 0.7502,
+      "validation_loss": 0.7108362392425537
+    },
+    {
+      "all_residual": false,
+      "all_silu": true,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 260.6264684200287,
+      "epochs_consumed": 12,
+      "has_residual": false,
+      "has_silu": true,
+      "parameter_count": 103850,
+      "proposal_phase": "startup",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.8379423824098375,
+      "trial_id": "41dd0fba",
+      "trial_number": 1,
+      "validation_accuracy": 0.6788,
+      "validation_loss": 0.9203465758800506
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": false
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 254.5171937942505,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 72746,
+      "proposal_phase": "startup",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.6189489180352953,
+      "trial_id": "8285376a",
+      "trial_number": 2,
+      "validation_accuracy": 0.7404,
+      "validation_loss": 0.7763651872634888
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 247.08319330215454,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 103338,
+      "proposal_phase": "startup",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.5385949286990696,
+      "trial_id": "a4d360bb",
+      "trial_number": 3,
+      "validation_accuracy": 0.7658,
+      "validation_loss": 0.6982595156192779
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 74.46959829330444,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 24778,
+      "proposal_phase": "startup",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "bayesian",
+      "train_loss": 1.2442589844173855,
+      "trial_id": "5a794321",
+      "trial_number": 4,
+      "validation_accuracy": 0.5202,
+      "validation_loss": 1.3882570280075073
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 82.78427171707153,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 46538,
+      "proposal_phase": "startup",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "bayesian",
+      "train_loss": 1.0100601657973396,
+      "trial_id": "373c75ad",
+      "trial_number": 5,
+      "validation_accuracy": 0.5108,
+      "validation_loss": 1.4487724224090577
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 171.27203702926636,
+      "epochs_consumed": 8,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 79242,
+      "proposal_phase": "startup",
+      "pruning_iteration": 8,
+      "status": "PRUNED",
+      "strategy": "bayesian",
+      "train_loss": 0.6641662583457099,
+      "trial_id": "ba4a3639",
+      "trial_number": 6,
+      "validation_accuracy": 0.7322,
+      "validation_loss": 0.7886910833358765
+    },
+    {
+      "all_residual": true,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 241.6380808353424,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 126890,
+      "proposal_phase": "startup",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.563815951845381,
+      "trial_id": "fe49dd9d",
+      "trial_number": 7,
+      "validation_accuracy": 0.7398,
+      "validation_loss": 0.7919169174671173
+    },
+    {
+      "all_residual": false,
+      "all_silu": true,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 2
+      },
+      "blocks": 2,
+      "duration_seconds": 77.74593758583069,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 11082,
+      "proposal_phase": "startup",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "bayesian",
+      "train_loss": 1.2777440093994141,
+      "trial_id": "1450087b",
+      "trial_number": 8,
+      "validation_accuracy": 0.519,
+      "validation_loss": 1.3571763343811034
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": true
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 162.64351320266724,
+      "epochs_consumed": 8,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 181610,
+      "proposal_phase": "startup",
+      "pruning_iteration": 8,
+      "status": "PRUNED",
+      "strategy": "bayesian",
+      "train_loss": 0.6609636250283983,
+      "trial_id": "b63879fc",
+      "trial_number": 9,
+      "validation_accuracy": 0.7312,
+      "validation_loss": 0.787352681684494
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 244.24305367469788,
+      "epochs_consumed": 12,
+      "has_residual": false,
+      "has_silu": true,
+      "parameter_count": 77034,
+      "proposal_phase": "startup",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.6126086675643921,
+      "trial_id": "279a1cf4",
+      "trial_number": 10,
+      "validation_accuracy": 0.7626,
+      "validation_loss": 0.7165882121562958
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 5,
+            "out_channels": 64,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 81.03552079200745,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 82410,
+      "proposal_phase": "adaptive",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "bayesian",
+      "train_loss": 0.9170865838474698,
+      "trial_id": "f7e9a385",
+      "trial_number": 11,
+      "validation_accuracy": 0.5132,
+      "validation_loss": 1.5278345497131347
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 5,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 551.7045123577118,
+      "epochs_consumed": 12,
+      "has_residual": false,
+      "has_silu": true,
+      "parameter_count": 38570,
+      "proposal_phase": "adaptive",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.6754277981122335,
+      "trial_id": "cfa4f377",
+      "trial_number": 12,
+      "validation_accuracy": 0.7616,
+      "validation_loss": 0.711027168750763
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 253.0352463722229,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 43018,
+      "proposal_phase": "adaptive",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.6120921842151218,
+      "trial_id": "a6f529f6",
+      "trial_number": 13,
+      "validation_accuracy": 0.7672,
+      "validation_loss": 0.6975375359535217
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 255.0492446422577,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 39242,
+      "proposal_phase": "adaptive",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.6277521742184957,
+      "trial_id": "705f71cf",
+      "trial_number": 14,
+      "validation_accuracy": 0.7782,
+      "validation_loss": 0.6747578905582428
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": true
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          }
+        ],
+        "num_blocks": 3
+      },
+      "blocks": 3,
+      "duration_seconds": 86.28960156440735,
+      "epochs_consumed": 4,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 34250,
+      "proposal_phase": "adaptive",
+      "pruning_iteration": 4,
+      "status": "PRUNED",
+      "strategy": "bayesian",
+      "train_loss": 1.0092579802407158,
+      "trial_id": "d8891e5b",
+      "trial_number": 15,
+      "validation_accuracy": 0.6148,
+      "validation_loss": 1.0845614707946778
+    },
+    {
+      "all_residual": false,
+      "all_silu": false,
+      "architecture": {
+        "blocks": [
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 64,
+            "residual": false
+          },
+          {
+            "activation": "silu",
+            "kernel_size": 3,
+            "out_channels": 32,
+            "residual": false
+          },
+          {
+            "activation": "relu",
+            "kernel_size": 3,
+            "out_channels": 16,
+            "residual": true
+          }
+        ],
+        "num_blocks": 4
+      },
+      "blocks": 4,
+      "duration_seconds": 257.75142312049866,
+      "epochs_consumed": 12,
+      "has_residual": true,
+      "has_silu": true,
+      "parameter_count": 38730,
+      "proposal_phase": "adaptive",
+      "pruning_iteration": null,
+      "status": "COMPLETED",
+      "strategy": "bayesian",
+      "train_loss": 0.6371282810211182,
+      "trial_id": "e1df2cd4",
+      "trial_number": 16,
+      "validation_accuracy": 0.7804,
+      "validation_loss": 0.641887778711319
+    }
+  ]
+}

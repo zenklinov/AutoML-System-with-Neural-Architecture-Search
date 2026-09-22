@@ -7,6 +7,7 @@ artifacts produced by the calibration/search workflows and never loads CIFAR-10.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import json
 import math
@@ -270,6 +271,180 @@ def _trial_traits(trial: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _median(values: list[float]) -> float | None:
+    return statistics.median(values) if values else None
+
+
+def _late_epoch_summary(document: dict[str, Any]) -> dict[str, Any]:
+    histories: dict[str, list[dict[str, Any]]] = {}
+    for row in document.get("history", []):
+        histories.setdefault(str(row["trial_id"]), []).append(row)
+    gains_from_8 = []
+    gains_from_10 = []
+    trial_rows = []
+    for trial in document["trials"]:
+        if trial["status"] != "COMPLETED":
+            continue
+        by_epoch = {int(row["epoch"]): row for row in histories.get(trial["trial_id"], [])}
+        final_epoch = int(trial["epochs_consumed"])
+        if final_epoch not in by_epoch:
+            continue
+        final_score = float(by_epoch[final_epoch]["validation_accuracy"])
+        gain_8 = final_score - float(by_epoch[8]["validation_accuracy"]) if 8 in by_epoch else None
+        gain_10 = (
+            final_score - float(by_epoch[10]["validation_accuracy"])
+            if 10 in by_epoch
+            else None
+        )
+        if gain_8 is not None:
+            gains_from_8.append(gain_8)
+        if gain_10 is not None:
+            gains_from_10.append(gain_10)
+        trial_rows.append(
+            {
+                "trial_id": trial["trial_id"],
+                "final_epoch": final_epoch,
+                "gain_epoch_8_to_final": gain_8,
+                "gain_epoch_10_to_final": gain_10,
+            }
+        )
+    return {
+        "completed_trials_with_history": len(trial_rows),
+        "median_gain_epoch_8_to_final": _median(gains_from_8),
+        "median_gain_epoch_10_to_final": _median(gains_from_10),
+        "positive_gain_epoch_8_to_final_count": sum(gain > 0 for gain in gains_from_8),
+        "positive_gain_epoch_10_to_final_count": sum(gain > 0 for gain in gains_from_10),
+        "trials": trial_rows,
+    }
+
+
+def _phase_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    scored = [row for row in rows if row["validation_accuracy"] is not None]
+    best = max(scored, key=lambda row: float(row["validation_accuracy"])) if scored else None
+    statuses = {
+        status: sum(row["status"] == status for row in rows)
+        for status in ("COMPLETED", "PRUNED", "FAILED")
+    }
+    pruning_iterations: dict[str, int] = {}
+    for row in rows:
+        if row["pruning_iteration"] is not None:
+            key = str(row["pruning_iteration"])
+            pruning_iterations[key] = pruning_iterations.get(key, 0) + 1
+    return {
+        "trial_count": len(rows),
+        "completed_count": statuses["COMPLETED"],
+        "pruned_count": statuses["PRUNED"],
+        "failed_count": statuses["FAILED"],
+        "epochs_consumed": sum(int(row["epochs_consumed"]) for row in rows),
+        "duration_seconds_sum": sum(float(row["duration_seconds"]) for row in rows),
+        "median_parameter_count": _median([float(row["parameter_count"]) for row in rows]),
+        "median_validation_accuracy": _median(
+            [float(row["validation_accuracy"]) for row in scored]
+        ),
+        "best_trial_id": best["trial_id"] if best else None,
+        "best_validation_accuracy": best["validation_accuracy"] if best else None,
+        "best_parameter_count": best["parameter_count"] if best else None,
+        "pruning_iterations": pruning_iterations,
+    }
+
+
+def _capacity_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    scored = [row for row in rows if row["validation_accuracy"] is not None]
+    completed = [row for row in scored if row["status"] == "COMPLETED"]
+
+    def correlation(selected: list[dict[str, Any]]) -> float | None:
+        return _spearman(
+            [float(row["parameter_count"]) for row in selected],
+            [float(row["validation_accuracy"]) for row in selected],
+        )
+
+    return {
+        "terminal_score_parameter_spearman": correlation(scored),
+        "completed_score_parameter_spearman": correlation(completed),
+        "median_parameter_count": _median([float(row["parameter_count"]) for row in rows]),
+        "completed_median_parameter_count": _median(
+            [float(row["parameter_count"]) for row in completed]
+        ),
+    }
+
+
+def _curated_trials(document: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            **row,
+            "architecture": trial["architecture"],
+        }
+        for row, trial in zip(rows, document["trials"], strict=True)
+    ]
+
+
+def _search_epoch_rows(
+    document: dict[str, Any], trial_rows: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    trial_metadata = {row["trial_id"]: row for row in trial_rows}
+    rows = []
+    for history in document.get("history", []):
+        metadata = trial_metadata[history["trial_id"]]
+        rows.append(
+            {
+                "strategy": metadata["strategy"],
+                "trial_number": metadata["trial_number"],
+                "proposal_phase": metadata["proposal_phase"],
+                "trial_id": history["trial_id"],
+                "epoch": history["epoch"],
+                "parameter_count": history["parameter_count"],
+                "validation_accuracy": history["validation_accuracy"],
+                "validation_loss": history["validation_loss"],
+                "train_loss": history["train_loss"],
+                "elapsed_trial_seconds": history["elapsed_trial_seconds"],
+            }
+        )
+    return rows
+
+
+def _paired_provenance(
+    random_manifest: dict[str, Any], tpe_manifest: dict[str, Any]
+) -> dict[str, Any]:
+    for name, manifest in (("random", random_manifest), ("tpe", tpe_manifest)):
+        if manifest.get("status") != "COMPLETED":
+            raise ValueError(f"{name} manifest must be complete")
+        if manifest.get("git", {}).get("dirty") is not False:
+            raise ValueError(f"{name} manifest must record a clean worktree")
+    if random_manifest["git"]["commit_sha"] != tpe_manifest["git"]["commit_sha"]:
+        raise ValueError("paired pilot manifests must use the same Git commit")
+    random_config = copy.deepcopy(random_manifest["config"])
+    tpe_config = copy.deepcopy(tpe_manifest["config"])
+    random_config["search"]["strategy"] = "<strategy>"
+    tpe_config["search"]["strategy"] = "<strategy>"
+    random_config["output"]["run_label"] = "<run-label>"
+    tpe_config["output"]["run_label"] = "<run-label>"
+    if random_config != tpe_config:
+        raise ValueError("paired pilot configs differ beyond strategy and run label")
+    return {
+        "paired_config_match": True,
+        "git": random_manifest["git"],
+        "software": random_manifest["software"],
+        "system": random_manifest["system"],
+        "execution_common": {
+            key: value
+            for key, value in random_manifest["execution"].items()
+            if key != "search_strategy"
+        },
+        "random": {
+            "run_id": random_manifest["run_id"],
+            "started_at_utc": random_manifest["started_at_utc"],
+            "finished_at_utc": random_manifest["finished_at_utc"],
+            "status": random_manifest["status"],
+        },
+        "tpe": {
+            "run_id": tpe_manifest["run_id"],
+            "started_at_utc": tpe_manifest["started_at_utc"],
+            "finished_at_utc": tpe_manifest["finished_at_utc"],
+            "status": tpe_manifest["status"],
+        },
+    }
+
+
 def analyze_search(document: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     trials = document["trials"]
     if not trials:
@@ -320,6 +495,9 @@ def analyze_search(document: dict[str, Any]) -> tuple[dict[str, Any], list[dict[
             "best_validation_accuracy": best_trial["validation_accuracy"],
             "best_parameter_count": best_trial["parameter_count"],
             "best_so_far": _best_so_far(trials),
+            "late_epoch_learning": _late_epoch_summary(document),
+            "capacity": _capacity_summary(trial_rows),
+            "pruning_iterations": _phase_summary(trial_rows)["pruning_iterations"],
         },
         trial_rows,
     )
@@ -435,6 +613,8 @@ def main() -> None:
     parser.add_argument("--calibration-manifest", type=Path)
     parser.add_argument("--random", type=Path)
     parser.add_argument("--tpe", type=Path)
+    parser.add_argument("--random-manifest", type=Path)
+    parser.add_argument("--tpe-manifest", type=Path)
     parser.add_argument("--output-directory", type=Path, required=True)
     arguments = parser.parse_args()
     calibration = _read_json(arguments.calibration)
@@ -465,9 +645,13 @@ def main() -> None:
     _calibration_svg(epoch_rows, output / "calibration_rank_stability.svg", ranks=True)
     if bool(arguments.random) != bool(arguments.tpe):
         raise ValueError("--random and --tpe must be supplied together")
+    if bool(arguments.random_manifest) != bool(arguments.tpe_manifest):
+        raise ValueError("--random-manifest and --tpe-manifest must be supplied together")
     if arguments.random and arguments.tpe:
-        random_report, random_rows = analyze_search(_read_json(arguments.random))
-        tpe_report, tpe_rows = analyze_search(_read_json(arguments.tpe))
+        random_document = _read_json(arguments.random)
+        tpe_document = _read_json(arguments.tpe)
+        random_report, random_rows = analyze_search(random_document)
+        tpe_report, tpe_rows = analyze_search(tpe_document)
         rows = random_rows + tpe_rows
         startup = [
             row
@@ -498,10 +682,52 @@ def main() -> None:
                     if adaptive
                     else None
                 ),
+                "startup": _phase_summary(startup),
+                "adaptive": _phase_summary(adaptive),
+            },
+            "capacity": {
+                "random": _capacity_summary(random_rows),
+                "tpe_startup": _capacity_summary(startup),
+                "tpe_adaptive": _capacity_summary(adaptive),
+            },
+            "paired_startup": {
+                "architecture_matches": sum(
+                    left["architecture"] == right["architecture"]
+                    for left, right in zip(
+                        random_document["trials"][:10],
+                        tpe_document["trials"][:10],
+                        strict=False,
+                    )
+                ),
+                "terminal_score_matches": sum(
+                    left["validation_accuracy"] == right["validation_accuracy"]
+                    for left, right in zip(random_rows[:10], tpe_rows[:10], strict=False)
+                ),
             },
         }
+        if arguments.random_manifest and arguments.tpe_manifest:
+            provenance = _paired_provenance(
+                _read_json(arguments.random_manifest), _read_json(arguments.tpe_manifest)
+            )
+            report["comparative_pilot"]["provenance"] = provenance
+            _write_json(output / "pilot_provenance.json", provenance)
         _write_json(output / "pilot_analysis.json", report)
+        _write_json(
+            output / "pilot_architectures.json",
+            {
+                "disclaimer": DISCLAIMER,
+                "random_run_id": random_document["run_id"],
+                "tpe_run_id": tpe_document["run_id"],
+                "trials": _curated_trials(random_document, random_rows)
+                + _curated_trials(tpe_document, tpe_rows),
+            },
+        )
         _write_csv(output / "pilot_trials.csv", rows)
+        _write_csv(
+            output / "pilot_epochs.csv",
+            _search_epoch_rows(random_document, random_rows)
+            + _search_epoch_rows(tpe_document, tpe_rows),
+        )
         best_rows = random_report["best_so_far"] + tpe_report["best_so_far"]
         _write_csv(output / "pilot_best_so_far.csv", best_rows)
         _search_lines_svg(best_rows, output / "pilot_best_by_trial.svg")

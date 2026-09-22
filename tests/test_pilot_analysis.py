@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from scripts.analyze_pilot import DISCLAIMER, analyze_calibration, analyze_search
+from scripts.analyze_pilot import (
+    DISCLAIMER,
+    _paired_provenance,
+    analyze_calibration,
+    analyze_search,
+)
 
 
 def _record(index: int, scores: list[float]) -> dict[str, Any]:
@@ -119,3 +124,88 @@ def test_search_analysis_classifies_tpe_startup_and_adaptive_trials() -> None:
     assert [row["proposal_phase"] for row in rows[:10]] == ["startup"] * 10
     assert [row["proposal_phase"] for row in rows[10:]] == ["adaptive"] * 2
     assert report["best_validation_accuracy"] == 0.61
+
+
+def test_search_analysis_summarizes_pruning_and_capacity() -> None:
+    completed = {
+        "trial_id": "completed",
+        "search_strategy": "random",
+        "architecture": _record(1, [0.5])["architecture"],
+        "parameter_count": 200,
+        "status": "COMPLETED",
+        "epochs_consumed": 12,
+        "pruning_iteration": None,
+        "validation_accuracy": 0.8,
+        "validation_loss": 0.2,
+        "train_loss": 0.1,
+        "duration_seconds": 12.0,
+    }
+    pruned = {
+        **completed,
+        "trial_id": "pruned",
+        "parameter_count": 100,
+        "status": "PRUNED",
+        "epochs_consumed": 4,
+        "pruning_iteration": 4,
+        "validation_accuracy": 0.5,
+        "duration_seconds": 4.0,
+    }
+    history = [
+        {
+            "trial_id": "completed",
+            "epoch": epoch,
+            "validation_accuracy": 0.5 + epoch / 40,
+        }
+        for epoch in range(1, 13)
+    ]
+    document = {
+        "run_id": "random-test",
+        "trials": [completed, pruned],
+        "history": history,
+        "aggregate": {
+            "completed_count": 1,
+            "pruned_count": 1,
+            "failed_count": 0,
+            "epochs_consumed": 16,
+            "search_duration_seconds": 16.0,
+            "cpu_hours": 0.0,
+            "gpu_hours": 1.0,
+        },
+    }
+
+    report, _ = analyze_search(document)
+
+    assert report["pruning_iterations"] == {"4": 1}
+    assert abs(report["capacity"]["terminal_score_parameter_spearman"] - 1.0) < 1e-12
+    assert abs(report["late_epoch_learning"]["median_gain_epoch_8_to_final"] - 0.1) < 1e-12
+
+
+def test_paired_provenance_rejects_non_strategy_config_difference() -> None:
+    base = {
+        "status": "COMPLETED",
+        "git": {"commit_sha": "abc", "dirty": False},
+        "config": {
+            "search": {"strategy": "random", "num_trials": 16},
+            "output": {"run_label": "random"},
+        },
+        "software": {},
+        "system": {},
+        "execution": {"search_strategy": "random", "gpu_per_trial": 1},
+        "run_id": "random",
+        "started_at_utc": "start",
+        "finished_at_utc": "finish",
+    }
+    tpe = {
+        **base,
+        "config": {
+            "search": {"strategy": "bayesian", "num_trials": 20},
+            "output": {"run_label": "tpe"},
+        },
+    }
+
+    try:
+        _paired_provenance(base, tpe)
+    except ValueError as error:
+        assert "differ" in str(error)
+    else:
+        raise AssertionError("mismatched paired configs should be rejected")
