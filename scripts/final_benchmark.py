@@ -250,6 +250,9 @@ class Tee:
     def __init__(self, *streams: TextIO) -> None:
         self.streams = streams
 
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.streams[0], name)
+
     def write(self, text: str) -> int:
         for stream in self.streams:
             stream.write(text)

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import contextlib
+import importlib
 import importlib.util
+import io
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,3 +114,18 @@ def test_shell_runner_has_no_locked_test_entrypoint() -> None:
     forbidden = "evaluate" + "-locked-test"
     assert forbidden not in source
     assert forbidden not in helper
+
+
+def test_ray_tune_imports_with_tee_redirects() -> None:
+    module = _module()
+    captured_stdout = io.StringIO()
+    captured_stderr = io.StringIO()
+    tee_stdout = module.Tee(sys.stdout, captured_stdout)
+    tee_stderr = module.Tee(sys.stderr, captured_stderr)
+
+    with contextlib.redirect_stdout(tee_stdout), contextlib.redirect_stderr(tee_stderr):
+        importlib.import_module("ray.tune")
+
+    assert tee_stdout.encoding == sys.stdout.encoding
+    assert tee_stdout.errors == sys.stdout.errors
+    assert tee_stdout.isatty() == sys.stdout.isatty()
