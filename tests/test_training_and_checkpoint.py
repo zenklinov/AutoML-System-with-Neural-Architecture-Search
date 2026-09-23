@@ -111,3 +111,41 @@ def test_checkpoint_round_trip_and_resume_training(smoke_config) -> None:
             model, loaders.train, optimizer, criterion, torch.device("cpu")
         )
         assert resumed_loss > 0
+
+
+def test_cuda_rng_state_is_restored_as_cpu_byte_tensor(
+    monkeypatch, smoke_config
+) -> None:
+    architecture = make_architecture(2)
+    model = CandidateCNN(architecture)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+    loaders = get_search_data_loaders(
+        smoke_config.data,
+        smoke_config.model,
+        smoke_config.training.batch_size,
+        smoke_config.seed,
+    )
+    config = _trial_config(smoke_config)
+
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "training_state.pt"
+        save_training_state(path, model, optimizer, 0, config, loaders.generator)
+        state = torch.load(path, map_location="cpu", weights_only=False)
+        state["cuda_rng_state"] = [torch.arange(8, dtype=torch.uint8)]
+        torch.save(state, path)
+
+        restored_rng_states: list[torch.Tensor] = []
+        monkeypatch.setattr(
+            torch.cuda,
+            "set_rng_state_all",
+            lambda states: restored_rng_states.extend(states),
+        )
+        next_epoch, restored_config = restore_training_state(
+            path, model, optimizer, loaders.generator, torch.device("cuda")
+        )
+
+    assert next_epoch == 1
+    assert restored_config == config
+    assert len(restored_rng_states) == 1
+    assert restored_rng_states[0].device.type == "cpu"
+    assert restored_rng_states[0].dtype == torch.uint8

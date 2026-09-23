@@ -115,7 +115,10 @@ def restore_training_state(
     device: torch.device,
 ) -> tuple[int, dict[str, Any]]:
     """Restore training state and return the next epoch and saved config."""
-    state = torch.load(path, map_location=device, weights_only=False)
+    # Keep serialized RNG states on the CPU.  In particular,
+    # torch.cuda.set_rng_state_all requires CPU ByteTensors even when the
+    # model and optimizer are restored onto a CUDA device.
+    state = torch.load(path, map_location="cpu", weights_only=False)
     model.load_state_dict(state["model_state"])
     optimizer.load_state_dict(state["optimizer_state"])
     for optimizer_state in optimizer.state.values():
@@ -127,7 +130,9 @@ def restore_training_state(
     torch.set_rng_state(state["torch_rng_state"].cpu())
     loader_generator.set_state(state["loader_rng_state"].cpu())
     if device.type == "cuda" and "cuda_rng_state" in state:
-        torch.cuda.set_rng_state_all(state["cuda_rng_state"])
+        torch.cuda.set_rng_state_all(
+            [rng_state.cpu() for rng_state in state["cuda_rng_state"]]
+        )
     return int(state["completed_epoch"]) + 1, state["config"]
 
 
